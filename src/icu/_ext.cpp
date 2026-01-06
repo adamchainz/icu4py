@@ -190,14 +190,14 @@ PyMethodDef MessageFormat_methods[] = {
 PyTypeObject MessageFormatType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
     .tp_name = "icu._ext.MessageFormat",
-    .tp_doc = "ICU MessageFormat",
     .tp_basicsize = sizeof(MessageFormatObject),
     .tp_itemsize = 0,
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_new = MessageFormat_new,
-    .tp_init = reinterpret_cast<initproc>(MessageFormat_init),
     .tp_dealloc = reinterpret_cast<destructor>(MessageFormat_dealloc),
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_doc = "ICU MessageFormat",
     .tp_methods = MessageFormat_methods,
+    .tp_init = reinterpret_cast<initproc>(MessageFormat_init),
+    .tp_new = MessageFormat_new,
 };
 
 int icu_ext_exec(PyObject* m) {
