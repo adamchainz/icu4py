@@ -1,0 +1,235 @@
+#define PY_SSIZE_T_CLEAN
+#include <Python.h>
+#include <unicode/msgfmt.h>
+#include <unicode/unistr.h>
+#include <unicode/fmtable.h>
+#include <unicode/locid.h>
+#include <unicode/parsepos.h>
+#include <unicode/ustring.h>
+
+#include <cstring>
+
+namespace {
+
+using icu::MessageFormat;
+using icu::UnicodeString;
+using icu::Formattable;
+using icu::Locale;
+using icu::FieldPosition;
+using icu::StringPiece;
+
+struct MessageFormatObject {
+    PyObject_HEAD
+    MessageFormat* formatter;
+};
+
+void MessageFormat_dealloc(MessageFormatObject* self) {
+    delete self->formatter;
+    Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
+}
+
+PyObject* MessageFormat_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+    auto* self = reinterpret_cast<MessageFormatObject*>(type->tp_alloc(type, 0));
+    if (self != nullptr) {
+        self->formatter = nullptr;
+    }
+    return reinterpret_cast<PyObject*>(self);
+}
+
+int MessageFormat_init(MessageFormatObject* self, PyObject* args, PyObject* kwds) {
+    const char* pattern;
+    const char* locale_str;
+    Py_ssize_t pattern_len;
+
+    static const char* kwlist[] = {"pattern", "locale", nullptr};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#s",
+                                     const_cast<char**>(kwlist),
+                                     &pattern, &pattern_len, &locale_str)) {
+        return -1;
+    }
+
+    UErrorCode status = U_ZERO_ERROR;
+    UnicodeString upattern = UnicodeString::fromUTF8(StringPiece(pattern, pattern_len));
+    Locale locale(locale_str);
+
+    self->formatter = new MessageFormat(upattern, locale, status);
+
+    if (U_FAILURE(status)) {
+        delete self->formatter;
+        self->formatter = nullptr;
+        PyErr_Format(PyExc_ValueError, "Failed to create MessageFormat: %s",
+                     u_errorName(status));
+        return -1;
+    }
+
+    return 0;
+}
+
+bool pyobject_to_formattable(PyObject* obj, Formattable& formattable) {
+    if (PyLong_Check(obj)) {
+        long long_val = PyLong_AsLongLong(obj);
+        if (long_val == -1 && PyErr_Occurred()) {
+            return false;
+        }
+        formattable = Formattable(static_cast<int64_t>(long_val));
+        return true;
+    }
+
+    if (PyUnicode_Check(obj)) {
+        const char* str_val = PyUnicode_AsUTF8(obj);
+        if (str_val == nullptr) {
+            return false;
+        }
+        formattable = Formattable(UnicodeString::fromUTF8(str_val));
+        return true;
+    }
+
+    if (PyFloat_Check(obj)) {
+        double dbl_val = PyFloat_AsDouble(obj);
+        formattable = Formattable(dbl_val);
+        return true;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, or str");
+    return false;
+}
+
+bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
+                             Formattable*& values, int32_t& count) {
+    if (!PyDict_Check(dict)) {
+        PyErr_SetString(PyExc_TypeError, "Argument must be a dictionary");
+        return false;
+    }
+
+    PyObject* keys = PyDict_Keys(dict);
+    if (keys == nullptr) {
+        return false;
+    }
+
+    count = static_cast<int32_t>(PyList_Size(keys));
+    if (count == 0) {
+        Py_DECREF(keys);
+        names = nullptr;
+        values = nullptr;
+        return true;
+    }
+
+    auto names_ptr = std::make_unique<UnicodeString[]>(count);
+    auto values_ptr = std::make_unique<Formattable[]>(count);
+
+    for (int32_t i = 0; i < count; ++i) {
+        PyObject* key = PyList_GetItem(keys, i);
+        PyObject* value = PyDict_GetItem(dict, key);
+
+        const char* key_str = PyUnicode_AsUTF8(key);
+        if (key_str == nullptr) {
+            Py_DECREF(keys);
+            return false;
+        }
+        names_ptr[i] = UnicodeString::fromUTF8(key_str);
+
+        if (!pyobject_to_formattable(value, values_ptr[i])) {
+            Py_DECREF(keys);
+            return false;
+        }
+    }
+
+    Py_DECREF(keys);
+
+    names = names_ptr.release();
+    values = values_ptr.release();
+    return true;
+}
+
+PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
+    PyObject* params_dict;
+
+    if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &params_dict)) {
+        return nullptr;
+    }
+
+    UnicodeString* argumentNames = nullptr;
+    Formattable* arguments = nullptr;
+    int32_t count = 0;
+
+    if (!dict_to_parallel_arrays(params_dict, argumentNames, arguments, count)) {
+        return nullptr;
+    }
+
+    auto names_guard = std::unique_ptr<UnicodeString[]>(argumentNames);
+    auto values_guard = std::unique_ptr<Formattable[]>(arguments);
+
+    UErrorCode status = U_ZERO_ERROR;
+    UnicodeString result;
+
+    if (count == 0) {
+        FieldPosition field_pos;
+        result = self->formatter->format(nullptr, 0, result, field_pos, status);
+    } else {
+        result = self->formatter->format(argumentNames, arguments, count, result, status);
+    }
+
+    if (U_FAILURE(status)) {
+        PyErr_Format(PyExc_RuntimeError, "Failed to format message: %s",
+                     u_errorName(status));
+        return nullptr;
+    }
+
+    std::string utf8;
+    result.toUTF8String(utf8);
+    return PyUnicode_FromString(utf8.c_str());
+}
+
+PyMethodDef MessageFormat_methods[] = {
+    {"format", reinterpret_cast<PyCFunction>(MessageFormat_format), METH_VARARGS,
+     "Format the message with given parameters"},
+    {nullptr, nullptr, 0, nullptr}
+};
+
+PyTypeObject MessageFormatType = {
+    PyVarObject_HEAD_INIT(nullptr, 0)
+    .tp_name = "icu._ext.MessageFormat",
+    .tp_doc = "ICU MessageFormat",
+    .tp_basicsize = sizeof(MessageFormatObject),
+    .tp_itemsize = 0,
+    .tp_flags = Py_TPFLAGS_DEFAULT,
+    .tp_new = MessageFormat_new,
+    .tp_init = reinterpret_cast<initproc>(MessageFormat_init),
+    .tp_dealloc = reinterpret_cast<destructor>(MessageFormat_dealloc),
+    .tp_methods = MessageFormat_methods,
+};
+
+int icu_ext_exec(PyObject* m) {
+    if (PyType_Ready(&MessageFormatType) < 0) {
+        return -1;
+    }
+
+    Py_INCREF(&MessageFormatType);
+    if (PyModule_AddObject(m, "MessageFormat",
+                          reinterpret_cast<PyObject*>(&MessageFormatType)) < 0) {
+        Py_DECREF(&MessageFormatType);
+        return -1;
+    }
+
+    return 0;
+}
+
+PyModuleDef_Slot icu_ext_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>(icu_ext_exec)},
+    {0, nullptr}
+};
+
+PyModuleDef icumodule = {
+    PyModuleDef_HEAD_INIT,
+    .m_name = "icu._ext",
+    .m_doc = "Bindings to the ICU (International Components for Unicode) library (ICU4C).",
+    .m_size = 0,
+    .m_slots = icu_ext_slots,
+};
+
+}  // anonymous namespace
+
+PyMODINIT_FUNC PyInit__ext() {
+    return PyModuleDef_Init(&icumodule);
+}
