@@ -102,14 +102,8 @@ bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
         return false;
     }
 
-    PyObject* keys = PyDict_Keys(dict);
-    if (keys == nullptr) {
-        return false;
-    }
-
-    count = static_cast<int32_t>(PyList_Size(keys));
+    count = static_cast<int32_t>(PyDict_Size(dict));
     if (count == 0) {
-        Py_DECREF(keys);
         names = nullptr;
         values = nullptr;
         return true;
@@ -118,24 +112,55 @@ bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
     auto names_ptr = std::make_unique<UnicodeString[]>(count);
     auto values_ptr = std::make_unique<Formattable[]>(count);
 
-    for (int32_t i = 0; i < count; ++i) {
-        PyObject* key = PyList_GetItem(keys, i);
-        PyObject* value = PyDict_GetItem(dict, key);
+    Py_ssize_t pos = 0;
+    PyObject* key;
+    PyObject* value;
+    int32_t i = 0;
+    bool err = false;
+
+#ifdef Py_GIL_DISABLED
+    Py_BEGIN_CRITICAL_SECTION(dict);
+#endif
+    while (PyDict_Next(dict, &pos, &key, &value)) {
+        // Ensure we don't exceed allocated space
+        if (i >= count) {
+            PyErr_SetString(PyExc_RuntimeError, "Dictionary size changed during iteration");
+            err = true;
+            break;
+        }
+
+        if (key == nullptr) {
+            PyErr_SetString(PyExc_TypeError, "NULL key in dictionary");
+            err = true;
+            break;
+        }
+        if (value == nullptr) {
+            PyErr_SetString(PyExc_TypeError, "NULL value in dictionary");
+            err = true;
+            break;
+        }
 
         const char* key_str = PyUnicode_AsUTF8(key);
         if (key_str == nullptr) {
-            Py_DECREF(keys);
-            return false;
+            PyErr_SetString(PyExc_TypeError, "Dictionary keys must be strings");
+            err = true;
+            break;
         }
         names_ptr[i] = UnicodeString::fromUTF8(key_str);
 
         if (!pyobject_to_formattable(value, values_ptr[i])) {
-            Py_DECREF(keys);
-            return false;
+            PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
+            err = true;
+            break;
         }
+        ++i;
     }
-
-    Py_DECREF(keys);
+#ifdef Py_GIL_DISABLED
+    Py_END_CRITICAL_SECTION();
+#endif
+    if (err) {
+        return false;
+    }
 
     names = names_ptr.release();
     values = values_ptr.release();
