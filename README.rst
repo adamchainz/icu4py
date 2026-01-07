@@ -5,13 +5,13 @@ icu
 .. image:: https://img.shields.io/readthedocs/icu?style=for-the-badge
    :target: https://icu.readthedocs.io/en/latest/
 
-   .. image:: https://img.shields.io/github/actions/workflow/status/adamchainz/icu/main.yml.svg?branch=main&style=for-the-badge
+.. image:: https://img.shields.io/github/actions/workflow/status/adamchainz/icu/main.yml.svg?branch=main&style=for-the-badge
    :target: https://github.com/adamchainz/icu/actions?workflow=CI
 
 .. image:: https://img.shields.io/badge/Coverage-100%25-success?style=for-the-badge
    :target: https://github.com/adamchainz/icu/actions?workflow=CI
 
-   .. image:: https://img.shields.io/pypi/v/icu.svg?style=for-the-badge
+.. image:: https://img.shields.io/pypi/v/icu.svg?style=for-the-badge
    :target: https://pypi.org/project/icu/
 
 .. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=for-the-badge
