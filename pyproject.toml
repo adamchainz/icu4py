@@ -88,8 +88,8 @@ macos.before-all = "brew install icu4c"
 macos.environment.CPPFLAGS = "-I/opt/homebrew/opt/icu4c/include -I/usr/local/opt/icu4c/include"
 macos.environment.LDFLAGS = "-L/opt/homebrew/opt/icu4c/lib -L/usr/local/opt/icu4c/lib"
 # Use architecture-specific ICU4C installations for Windows
-windows.environment.INCLUDE = "C:\\icu4c-64\\include;C:\\icu4c-32\\include"
-windows.environment.LIB = "C:\\icu4c-64\\lib64;C:\\icu4c-32\\lib"
+windows.environment.INCLUDE = "C:/icu4c-64/include;C:/icu4c-32/include"
+windows.environment.LIB = "C:/icu4c-64/lib64;C:/icu4c-32/lib"
 
 [tool.ruff]
 lint.select = [
