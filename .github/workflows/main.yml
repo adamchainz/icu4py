@@ -124,6 +124,13 @@ jobs:
         with:
           platforms: all
 
+      - name: Install ICU4C
+        run: ${{
+          (matrix.os == 'macos' && 'brew install icu4c') ||
+          (matrix.os == 'windows' && 'vcpkg install icu') ||
+          'echo "No ICU4C installation needed"'
+          }}
+
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
         run: uv build --sdist

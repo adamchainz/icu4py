@@ -82,6 +82,9 @@ repair-wheel-command = ""
 macos.repair-wheel-command = ""
 linux.repair-wheel-command = ""
 
+# Install icu on all platforms
+linux.before-all = "yum install -y libicu-devel"
+
 [tool.ruff]
 lint.select = [
   # flake8-bugbear
