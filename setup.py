@@ -10,7 +10,7 @@ else:
     libraries = ["icui18n", "icuuc", "icudata"]
 
 if sys.platform == "win32":
-    extra_compile_args = ["/Zc:wchar_t", "/EHsc"]
+    extra_compile_args = ["/Zc:wchar_t", "/EHsc", "/std:c++17"]
 else:
     extra_compile_args = ["-std=c++17"]
 
