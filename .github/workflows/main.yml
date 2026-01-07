@@ -165,7 +165,7 @@ jobs:
           Get-ChildItem "C:\icu4c-64\lib64" -Name
           Write-Host ""
           Write-Host "=== Checking ARM64 ICU installation ==="
-          Get-ChildItem "C:\icu4c-arm64\lib64" -Name
+          Get-ChildItem "C:\icu4c-arm64\libARM64" -Name
 
       - name: Dump ICU import libs (Windows)
         if: matrix.os == 'windows'
