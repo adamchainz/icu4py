@@ -147,6 +147,14 @@ jobs:
           }
           Expand-Archive "icu4c-32.zip" -DestinationPath "C:\icu4c-32"
 
+          # Download ARM64 ICU4C
+          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-WinARM64-MSVC2022.zip" -OutFile "icu4c-arm64.zip"
+          $hashArm64 = Get-FileHash "icu4c-arm64.zip" -Algorithm SHA256
+          if ($hashArm64.Hash -ne "b603fc41bf150b271ded8280d03bdfe748401dad9b8dc0e0808f97482b177381") {
+            throw "ICU4C ARM64 hash mismatch"
+          }
+          Expand-Archive "icu4c-arm64.zip" -DestinationPath "C:\icu4c-arm64"
+
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
         run: uv build --sdist
