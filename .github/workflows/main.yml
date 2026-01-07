@@ -171,12 +171,12 @@ jobs:
         if: matrix.os == 'windows'
         shell: pwsh
         run: |
-          $dumpbin = "$env:ProgramFiles(x86)\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\bin\Hostx86\x86\dumpbin.exe"
-          if (-not (Test-Path $dumpbin)) {
-            $found = Get-ChildItem -Path "$env:ProgramFiles(x86)\Microsoft Visual Studio\2022" -Filter dumpbin.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
-            if (-not $found) { Write-Error "dumpbin not found"; exit 1 }
-            $dumpbin = $found
-          }
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { Write-Error "vswhere not found"; exit 1 }
+          $vs = & $vswhere -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { Write-Error "VS with VC tools not found"; exit 1 }
+          $dumpbin = Get-ChildItem -Path "$vs" -Filter dumpbin.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $dumpbin) { Write-Error "dumpbin not found"; exit 1 }
           Write-Host "=== dumpbin /headers icuin.lib (win32) ==="
           & $dumpbin /headers "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "machine|numberofsections|size of image"
           Write-Host "=== dumpbin /headers icuuc.lib (win32) ==="
