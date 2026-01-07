@@ -14,7 +14,7 @@ if sys.platform == "win32":
 else:
     extra_compile_args = ["-std=c++17"]
 
-extra_link_args = []
+extra_link_args: list[str] = []
 
 # On macOS, add rpath to find versionless Homebrew install location
 if sys.platform == "darwin":
