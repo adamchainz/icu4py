@@ -135,10 +135,6 @@ jobs:
         if: matrix.os == 'windows'
         run: vcpkg install icu
 
-      - name: No ICU4C installation needed (Linux)
-        if: matrix.os == 'linux'
-        run: echo "No ICU4C installation needed"
-
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
         run: uv build --sdist
