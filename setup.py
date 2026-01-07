@@ -10,9 +10,9 @@ else:
     libraries = ["icui18n", "icuuc", "icudata"]
 
 if sys.platform == "win32":
-    extra_compile_args = ["/Zc:wchar_t", "/EHsc", "/std:c++17"]
+    extra_compile_args = ["/Zc:wchar_t", "/EHsc", "/std:c++20"]
 else:
-    extra_compile_args = ["-std=c++17"]
+    extra_compile_args = ["-std=c++20"]
 
 extra_link_args: list[str] = []
 
