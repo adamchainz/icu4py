@@ -8,6 +8,7 @@
 #include <unicode/ustring.h>
 
 #include <cstring>
+#include <memory>
 
 namespace {
 
