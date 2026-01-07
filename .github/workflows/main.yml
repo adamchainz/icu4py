@@ -155,6 +155,29 @@ jobs:
           }
           Expand-Archive "icu4c-arm64.zip" -DestinationPath "C:\icu4c-arm64"
 
+      - name: Verify ICU installation
+        if: matrix.os == 'windows'
+        run: |
+          Write-Host "=== Checking 32-bit ICU installation ==="
+          Get-ChildItem "C:\icu4c-32\lib" -Name
+          Write-Host ""
+          Write-Host "=== Checking 64-bit ICU installation ==="
+          Get-ChildItem "C:\icu4c-64\lib64" -Name
+          Write-Host ""
+          Write-Host "=== Checking ARM64 ICU installation ==="
+          Get-ChildItem "C:\icu4c-arm64\lib64" -Name
+
+      - name: Dump ICU import libs (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          Write-Host "=== dumpbin /headers icuin.lib (win32) ==="
+          dumpbin /headers "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          Write-Host "=== dumpbin /headers icuuc.lib (win32) ==="
+          dumpbin /headers "C:\icu4c-32\lib\icuuc.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          Write-Host "=== dumpbin /headers icudt.lib (win32) ==="
+          dumpbin /headers "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
         run: uv build --sdist
