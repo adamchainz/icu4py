@@ -99,6 +99,7 @@ jobs:
       || contains(github.event.pull_request.labels.*.name, 'Build')
 
     strategy:
+      fail-fast: false
       matrix:
         os:
         - linux
