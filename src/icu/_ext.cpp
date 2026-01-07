@@ -215,15 +215,43 @@ PyMethodDef MessageFormat_methods[] = {
 
 PyTypeObject MessageFormatType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
-    .tp_name = "icu._ext.MessageFormat",
-    .tp_basicsize = sizeof(MessageFormatObject),
-    .tp_itemsize = 0,
-    .tp_dealloc = reinterpret_cast<destructor>(MessageFormat_dealloc),
-    .tp_flags = Py_TPFLAGS_DEFAULT,
-    .tp_doc = "ICU MessageFormat",
-    .tp_methods = MessageFormat_methods,
-    .tp_init = reinterpret_cast<initproc>(MessageFormat_init),
-    .tp_new = MessageFormat_new,
+    "icu._ext.MessageFormat", /* tp_name */
+    sizeof(MessageFormatObject), /* tp_basicsize */
+    0, /* tp_itemsize */
+    reinterpret_cast<destructor>(MessageFormat_dealloc), /* tp_dealloc */
+    0, /* tp_vectorcall_offset */
+    nullptr, /* tp_getattr */
+    nullptr, /* tp_setattr */
+    nullptr, /* tp_as_async */
+    nullptr, /* tp_repr */
+    nullptr, /* tp_as_number */
+    nullptr, /* tp_as_sequence */
+    nullptr, /* tp_as_mapping */
+    nullptr, /* tp_hash */
+    nullptr, /* tp_call */
+    nullptr, /* tp_str */
+    nullptr, /* tp_getattro */
+    nullptr, /* tp_setattro */
+    nullptr, /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT, /* tp_flags */
+    "ICU MessageFormat", /* tp_doc */
+    nullptr, /* tp_traverse */
+    nullptr, /* tp_clear */
+    nullptr, /* tp_richcompare */
+    0, /* tp_weaklistoffset */
+    nullptr, /* tp_iter */
+    nullptr, /* tp_iternext */
+    MessageFormat_methods, /* tp_methods */
+    nullptr, /* tp_members */
+    nullptr, /* tp_getset */
+    nullptr, /* tp_base */
+    nullptr, /* tp_dict */
+    nullptr, /* tp_descr_get */
+    nullptr, /* tp_descr_set */
+    0, /* tp_dictoffset */
+    reinterpret_cast<initproc>(MessageFormat_init), /* tp_init */
+    nullptr, /* tp_alloc */
+    MessageFormat_new, /* tp_new */
 };
 
 int icu_ext_exec(PyObject* m) {
@@ -251,10 +279,11 @@ PyModuleDef_Slot icu_ext_slots[] = {
 
 PyModuleDef icumodule = {
     PyModuleDef_HEAD_INIT,
-    .m_name = "icu._ext",
-    .m_doc = "Bindings to the ICU (International Components for Unicode) library (ICU4C).",
-    .m_size = 0,
-    .m_slots = icu_ext_slots,
+    "icu._ext", /* m_name */
+    "Bindings to the ICU (International Components for Unicode) library (ICU4C).", /* m_doc */
+    0, /* m_size */
+    nullptr, /* m_methods */
+    icu_ext_slots, /* m_slots */
 };
 
 }  // anonymous namespace
