@@ -171,12 +171,18 @@ jobs:
         if: matrix.os == 'windows'
         shell: pwsh
         run: |
+          $dumpbin = "$env:ProgramFiles(x86)\Microsoft Visual Studio\2022\Enterprise\VC\Tools\MSVC\14.44.35207\bin\Hostx86\x86\dumpbin.exe"
+          if (-not (Test-Path $dumpbin)) {
+            $found = Get-ChildItem -Path "$env:ProgramFiles(x86)\Microsoft Visual Studio\2022" -Filter dumpbin.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+            if (-not $found) { Write-Error "dumpbin not found"; exit 1 }
+            $dumpbin = $found
+          }
           Write-Host "=== dumpbin /headers icuin.lib (win32) ==="
-          dumpbin /headers "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          & $dumpbin /headers "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "machine|numberofsections|size of image"
           Write-Host "=== dumpbin /headers icuuc.lib (win32) ==="
-          dumpbin /headers "C:\icu4c-32\lib\icuuc.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          & $dumpbin /headers "C:\icu4c-32\lib\icuuc.lib" | Select-String -Pattern "machine|numberofsections|size of image"
           Write-Host "=== dumpbin /headers icudt.lib (win32) ==="
-          dumpbin /headers "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          & $dumpbin /headers "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "machine|numberofsections|size of image"
 
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
