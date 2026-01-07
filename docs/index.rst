@@ -8,5 +8,5 @@ Bindings to the `ICU (International Components for Unicode) library <https://icu
    :caption: Contents:
 
    installation
-   usage
+   api
    changelog

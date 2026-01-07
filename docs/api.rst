@@ -4,7 +4,7 @@ Usage
 
 .. currentmodule:: icu
 
-.. autoclass:: MessageFormat
+.. class:: MessageFormat(pattern: str, locale: str)
 
   A wrapper around ICU’s |MessageFormat class|__.
 
@@ -16,7 +16,7 @@ Usage
   :param pattern: The message pattern string.
   :param locale: The locale to use, as a string like ``"en_US"``.
 
-  .. automethod:: format
+  .. method:: format(values: dict[str, Any]) -> str
 
     Format the message with the given values.
 
