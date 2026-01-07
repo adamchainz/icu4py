@@ -184,6 +184,25 @@ jobs:
           Write-Host "=== dumpbin /headers icudt.lib (win32) ==="
           & $dumpbin /headers "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "machine|numberofsections|size of image"
 
+      - name: Dump ICU exports (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { Write-Error "vswhere not found"; exit 1 }
+          $vs = & $vswhere -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { Write-Error "VS with VC tools not found"; exit 1 }
+          $dumpbin = Get-ChildItem -Path "$vs" -Filter dumpbin.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $dumpbin) { Write-Error "dumpbin not found"; exit 1 }
+
+          Write-Host "=== dumpbin /linkermember:1 icuuc.lib (win32) ==="
+          & $dumpbin /linkermember:1 "C:\icu4c-32\lib\icuuc.lib" | Select-String -Pattern "u_errorName_78|ByteSink|MessageFormat|UnicodeString"
+          Write-Host "=== dumpbin /linkermember:1 icuin.lib (win32) ==="
+          & $dumpbin /linkermember:1 "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "MessageFormat|UnicodeString"
+          Write-Host "=== dumpbin /linkermember:1 icudt.lib (win32) ==="
+          & $dumpbin /linkermember:1 "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "u_errorName_78"
+
+
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
         run: uv build --sdist
