@@ -11,6 +11,11 @@ class TestMessageFormat:
         assert fmt.format({"name": "World"}) == "Hello, World!"
         assert fmt.format({"name": "Alice"}) == "Hello, Alice!"
 
+    def test_simple_string_substitution_invalid_locale(self):
+        pattern = "Hello, {name}!"
+        fmt = MessageFormat(pattern, "invalid_LOCALE")
+        assert fmt.format({"name": "World"}) == "Hello, World!"
+
     def test_multiple_string_substitution(self):
         pattern = "{greeting}, {name}! Welcome to {place}."
         fmt = MessageFormat(pattern, "en_US")
