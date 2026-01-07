@@ -127,7 +127,14 @@ jobs:
 
       - name: Install ICU4C (Windows)
         if: matrix.os == 'windows'
-        run: vcpkg install icu
+        run: |
+          # Source: https://github.com/unicode-org/icu/releases/tag/release-78.1
+          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-Win64-MSVC2022.zip" -OutFile "icu4c.zip"
+          $hash = Get-FileHash "icu4c.zip" -Algorithm SHA256
+          if ($hash.Hash -ne "7cdb80d49dddc74371788dcbd55907ae4ac2353db38bca74f10c0560f1bb8538") {
+            throw "ICU4C hash mismatch"
+          }
+          Expand-Archive "icu4c.zip" -DestinationPath "C:\icu4c"
 
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}

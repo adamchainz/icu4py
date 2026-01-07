@@ -87,6 +87,8 @@ linux.before-all = "yum install -y libicu-devel"
 macos.before-all = "brew install icu4c"
 macos.environment.CPPFLAGS = "-I/opt/homebrew/opt/icu4c/include -I/usr/local/opt/icu4c/include"
 macos.environment.LDFLAGS = "-L/opt/homebrew/opt/icu4c/lib -L/usr/local/opt/icu4c/lib"
+# Installed in GitHub Actions
+windows.environment = { CPPFLAGS = "-IC:\\icu4c\\include", LDFLAGS = "-LC:\\icu4c\\lib64" }
 
 [tool.ruff]
 lint.select = [
