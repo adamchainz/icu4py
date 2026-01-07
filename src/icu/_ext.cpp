@@ -217,6 +217,9 @@ int icu_ext_exec(PyObject* m) {
 
 PyModuleDef_Slot icu_ext_slots[] = {
     {Py_mod_exec, reinterpret_cast<void*>(icu_ext_exec)},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
     {0, nullptr}
 };
 
