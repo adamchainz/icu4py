@@ -85,7 +85,8 @@ linux.repair-wheel-command = ""
 # Install icu on all platforms
 linux.before-all = "yum install -y libicu-devel"
 macos.before-all = "brew install icu4c"
-macos.environment = { CPPFLAGS = "-I$(brew --prefix)/include", LDFLAGS = "-L$(brew --prefix)/lib" }
+macos.environment.CPPFLAGS = "-I/opt/homebrew/opt/icu4c/include -I/usr/local/opt/icu4c/include"
+macos.environment.LDFLAGS = "-L/opt/homebrew/opt/icu4c/lib -L/usr/local/opt/icu4c/lib"
 
 [tool.ruff]
 lint.select = [
