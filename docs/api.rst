@@ -1,6 +1,6 @@
-=====
-Usage
-=====
+===
+API
+===
 
 .. currentmodule:: icu
 
