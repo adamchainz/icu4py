@@ -91,6 +91,10 @@ macos.environment.LDFLAGS = "-L/opt/homebrew/opt/icu4c/lib -L/usr/local/opt/icu4
 windows.environment.INCLUDE = "C:/icu4c-64/include;C:/icu4c-32/include"
 windows.environment.LIB = "C:/icu4c-64/lib64;C:/icu4c-32/lib"
 
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = "apk add icu-dev"
+
 [tool.ruff]
 lint.select = [
   # flake8-bugbear
