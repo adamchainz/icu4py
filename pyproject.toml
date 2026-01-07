@@ -83,9 +83,9 @@ macos.repair-wheel-command = ""
 linux.repair-wheel-command = ""
 
 # Install icu on all platforms
-# macOS and Windows configured in GHA workflow.
 linux.before-all = "yum install -y libicu-devel"
-macos.environment-pass = ["CPPFLAGS", "LDFLAGS"]
+macos.before-all = "brew install icu4c"
+macos.environment = { CPPFLAGS = "-I$(brew --prefix)/include", LDFLAGS = "-L$(brew --prefix)/lib" }
 
 [tool.ruff]
 lint.select = [

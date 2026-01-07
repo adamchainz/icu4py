@@ -125,13 +125,6 @@ jobs:
         with:
           platforms: all
 
-      - name: Install and configure ICU4C (macOS)
-        if: matrix.os == 'macos'
-        run: |
-          brew install icu4c
-          echo "CPPFLAGS=-I$(brew --prefix)/include" >> $GITHUB_ENV
-          echo "LDFLAGS=-L$(brew --prefix)/lib" >> $GITHUB_ENV
-
       - name: Install ICU4C (Windows)
         if: matrix.os == 'windows'
         run: vcpkg install icu
