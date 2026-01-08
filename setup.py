@@ -26,8 +26,8 @@ if sys.platform == "darwin":
 setup(
     ext_modules=[
         Extension(
-            "icu._ext",
-            sources=["src/icu/_ext.cpp"],
+            "icu4py._ext",
+            sources=["src/icu4py/_ext.cpp"],
             libraries=libraries,
             extra_compile_args=extra_compile_args,
             extra_link_args=extra_link_args,

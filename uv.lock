@@ -299,7 +299,7 @@ wheels = [
 ]
 
 [[package]]
-name = "icu"
+name = "icu4py"
 version = "0.0.0"
 source = { editable = "." }
 

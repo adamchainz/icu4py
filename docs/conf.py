@@ -80,8 +80,8 @@ html_theme_options = {
 latex_documents = [
     (
         "index",
-        "icu.tex",
-        "icu Documentation",
+        "icu4py.tex",
+        "icu4py Documentation",
         "Adam Johnson",
         "manual",
     ),
