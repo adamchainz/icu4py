@@ -5,9 +5,9 @@ import sys
 from setuptools import Extension, setup
 
 if sys.platform == "win32":
-    libraries = ["icuin", "icuuc", "icudt"]
+    libraries = ["icudt", "icuin", "icuio", "icuuc"]
 else:
-    libraries = ["icui18n", "icuuc", "icudata"]
+    libraries = ["icudata", "icui18n", "icuio", "icuuc"]
 
 if sys.platform == "win32":
     extra_compile_args = ["/Zc:wchar_t", "/EHsc", "/std:c++17"]
