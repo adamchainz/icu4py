@@ -94,21 +94,24 @@ before-all = "apk add icu-dev"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-win_amd64"
+before-build = "powershell -Command \"Write-Host 'INCLUDE=' $env:INCLUDE; Write-Host 'LIB=' $env:LIB; Write-Host 'PATH=' $env:PATH\""
 environment.INCLUDE = "C:/icu4c-64/include;$INCLUDE"
 environment.LIB = "C:/icu4c-64/lib64;$LIB"
 environment.PATH = "C:/icu4c-64/bin64;$PATH"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-win32"
+before-build = "powershell -Command \"Write-Host 'INCLUDE=' $env:INCLUDE; Write-Host 'LIB=' $env:LIB; Write-Host 'PATH=' $env:PATH\""
 environment.INCLUDE = "C:/icu4c-32/include;$INCLUDE"
 environment.LIB = "C:/icu4c-32/lib;$LIB"
 environment.PATH = "C:/icu4c-32/bin;$PATH"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-win_arm64"
+before-build = "powershell -Command \"Write-Host 'INCLUDE=' $env:INCLUDE; Write-Host 'LIB=' $env:LIB; Write-Host 'PATH=' $env:PATH\""
 environment.INCLUDE = "C:/icu4c-arm64/include;$INCLUDE"
 environment.LIB = "C:/icu4c-arm64/libARM64;$LIB"
-environment.PATH = "C:/icu4c-arm64/bin64;$PATH"
+environment.PATH = "C:/icu4c-arm64/binARM64;$PATH"
 
 [tool.ruff]
 lint.select = [
