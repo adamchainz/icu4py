@@ -2,11 +2,16 @@
 API
 ===
 
-.. currentmodule:: icu4py
+``icu4py.messageformat``
+========================
+
+This module wraps ICU’s MessageFormat V1 functionality.
+
+.. currentmodule:: icu4py.messageformat
 
 .. class:: MessageFormat(pattern: str, locale: str)
 
-  A wrapper around ICU’s |MessageFormat class|__ (version 1).
+  A wrapper around ICU’s version 1 |MessageFormat class|__.
 
   .. |MessageFormat class| replace:: ``MessageFormat`` class
   __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1MessageFormat.html
