@@ -215,7 +215,7 @@ PyMethodDef MessageFormat_methods[] = {
 
 PyTypeObject MessageFormatType = {
     PyVarObject_HEAD_INIT(nullptr, 0)
-    "icu4py._ext.MessageFormat", /* tp_name */
+    "icu4py.messageformat.MessageFormat", /* tp_name */
     sizeof(MessageFormatObject), /* tp_basicsize */
     0, /* tp_itemsize */
     reinterpret_cast<destructor>(MessageFormat_dealloc), /* tp_dealloc */
@@ -279,8 +279,8 @@ PyModuleDef_Slot icu_ext_slots[] = {
 
 PyModuleDef icumodule = {
     PyModuleDef_HEAD_INIT,
-    "icu4py._ext", /* m_name */
-    "Bindings to the ICU (International Components for Unicode) library (ICU4C).", /* m_doc */
+    "icu4py.messageformat", /* m_name */
+    "", /* m_doc */
     0, /* m_size */
     nullptr, /* m_methods */
     icu_ext_slots, /* m_slots */

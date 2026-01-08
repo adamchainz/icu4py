@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from icu4py import MessageFormat
+from icu4py.messageformat import MessageFormat
 
 
 class TestMessageFormat:
