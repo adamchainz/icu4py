@@ -29,3 +29,6 @@ Installation
    .. code-block:: sh
 
       python -m pip install icu
+
+   Wheels are provided for Linux and macOS.
+   The Windows build has unresolved errors, as tracked in `Issue #11 <https://github.com/adamchainz/icu/issues/11>`__.
