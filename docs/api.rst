@@ -6,7 +6,7 @@ API
 
 .. class:: MessageFormat(pattern: str, locale: str)
 
-  A wrapper around ICU’s |MessageFormat class|__.
+  A wrapper around ICU’s |MessageFormat class|__ (version 1).
 
   .. |MessageFormat class| replace:: ``MessageFormat`` class
   __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1MessageFormat.html
