@@ -5,7 +5,7 @@ requires = [
 ]
 
 [project]
-name = "icu"
+name = "icu4py"
 version = "0.0.0"
 description = "Bindings to the ICU (International Components for Unicode) library (ICU4C)."
 readme = "README.rst"
@@ -38,10 +38,10 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
-urls.Changelog = "https://icu.readthedocs.io/en/latest/changelog.html"
-urls.Documentation = "https://icu.readthedocs.io/"
+urls.Changelog = "https://icu4py.readthedocs.io/en/latest/changelog.html"
+urls.Documentation = "https://icu4py.readthedocs.io/"
 urls.Funding = "https://adamj.eu/books/"
-urls.Repository = "https://github.com/adamchainz/icu"
+urls.Repository = "https://github.com/adamchainz/icu4py"
 
 [dependency-groups]
 test = [
@@ -147,7 +147,7 @@ xfail_strict = true
 branch = true
 parallel = true
 source = [
-  "icu",
+  "icu4py",
   "tests",
 ]
 

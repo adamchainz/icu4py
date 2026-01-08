@@ -2,7 +2,7 @@
 API
 ===
 
-.. currentmodule:: icu
+.. currentmodule:: icu4py
 
 .. class:: MessageFormat(pattern: str, locale: str)
 
@@ -32,7 +32,7 @@ API
 
     .. code-block:: pycon
 
-       >>> from icu import MessageFormat
+       >>> from icu4py import MessageFormat
        >>> pattern = "{count, plural, one {# file} other {# files}}"
        >>> fmt = MessageFormat(pattern, "en_US")
        >>> fmt.format({"count": 1})
@@ -44,7 +44,7 @@ API
 
     .. code-block:: pycon
 
-      >>> from icu import MessageFormat
+      >>> from icu4py import MessageFormat
       >>> pattern = (
       ...     "{num_guests, plural, offset:1 "
       ...     "=0 {{host} does not throw a party.}"
