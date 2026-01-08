@@ -94,21 +94,18 @@ before-all = "apk add icu-dev"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-win_amd64"
-environment.INCLUDE = "C:/vcpkg/installed/x64-windows/include;$INCLUDE"
-environment.LIB = "C:/vcpkg/installed/x64-windows/lib;$LIB"
-environment.PATH = "C:/vcpkg/installed/x64-windows/bin;$PATH"
+environment.INCLUDE = "C:/icu4c-64/include;$INCLUDE"
+environment.LIB = "C:/icu4c-64/lib64;$LIB"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-win32"
-environment.INCLUDE = "C:/vcpkg/installed/x86-windows/include;$INCLUDE"
-environment.LIB = "C:/vcpkg/installed/x86-windows/lib;$LIB"
-environment.PATH = "C:/vcpkg/installed/x86-windows/bin;$PATH"
+environment.INCLUDE = "C:/icu4c-32/include;$INCLUDE"
+environment.LIB = "C:/icu4c-32/lib;$LIB"
 
 [[tool.cibuildwheel.overrides]]
 select = "*-win_arm64"
-environment.INCLUDE = "C:/vcpkg/installed/arm64-windows/include;$INCLUDE"
-environment.LIB = "C:/vcpkg/installed/arm64-windows/lib;$LIB"
-environment.PATH = "C:/vcpkg/installed/arm64-windows/bin;$PATH"
+environment.INCLUDE = "C:/icu4c-arm64/include;$INCLUDE"
+environment.LIB = "C:/icu4c-arm64/libARM64;$LIB"
 
 [tool.ruff]
 lint.select = [

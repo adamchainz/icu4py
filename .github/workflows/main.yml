@@ -126,13 +126,82 @@ jobs:
         with:
           platforms: all
 
-      - name: Install ICU4C with vcpkg (Windows)
+      - name: Install ICU4C (Windows)
+        if: matrix.os == 'windows'
+        run: |
+          # Source: https://github.com/unicode-org/icu/releases/tag/release-78.1
+
+          # Download 64-bit ICU4C
+          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-Win64-MSVC2022.zip" -OutFile "icu4c-64.zip"
+          $hash64 = Get-FileHash "icu4c-64.zip" -Algorithm SHA256
+          if ($hash64.Hash -ne "7cdb80d49dddc74371788dcbd55907ae4ac2353db38bca74f10c0560f1bb8538") {
+            throw "ICU4C 64-bit hash mismatch"
+          }
+          Expand-Archive "icu4c-64.zip" -DestinationPath "C:\icu4c-64"
+
+          # Download 32-bit ICU4C
+          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-Win32-MSVC2022.zip" -OutFile "icu4c-32.zip"
+          $hash32 = Get-FileHash "icu4c-32.zip" -Algorithm SHA256
+          if ($hash32.Hash -ne "50e272cba56c6d635823fadee2dbbe7abc72627d73883740aafc3e222c12cfd9") {
+            throw "ICU4C 32-bit hash mismatch"
+          }
+          Expand-Archive "icu4c-32.zip" -DestinationPath "C:\icu4c-32"
+
+          # Download ARM64 ICU4C
+          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-WinARM64-MSVC2022.zip" -OutFile "icu4c-arm64.zip"
+          $hashArm64 = Get-FileHash "icu4c-arm64.zip" -Algorithm SHA256
+          if ($hashArm64.Hash -ne "b603fc41bf150b271ded8280d03bdfe748401dad9b8dc0e0808f97482b177381") {
+            throw "ICU4C ARM64 hash mismatch"
+          }
+          Expand-Archive "icu4c-arm64.zip" -DestinationPath "C:\icu4c-arm64"
+
+      - name: Verify ICU installation
+        if: matrix.os == 'windows'
+        run: |
+          Write-Host "=== Checking 32-bit ICU installation ==="
+          Get-ChildItem "C:\icu4c-32\lib" -Name
+          Write-Host ""
+          Write-Host "=== Checking 64-bit ICU installation ==="
+          Get-ChildItem "C:\icu4c-64\lib64" -Name
+          Write-Host ""
+          Write-Host "=== Checking ARM64 ICU installation ==="
+          Get-ChildItem "C:\icu4c-arm64\libARM64" -Name
+
+      - name: Dump ICU import libs (Windows)
         if: matrix.os == 'windows'
         shell: pwsh
         run: |
-          C:\vcpkg\vcpkg.exe install icu --triplet x86-windows
-          C:\vcpkg\vcpkg.exe install icu --triplet x64-windows
-          C:\vcpkg\vcpkg.exe install icu --triplet arm64-windows
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { Write-Error "vswhere not found"; exit 1 }
+          $vs = & $vswhere -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { Write-Error "VS with VC tools not found"; exit 1 }
+          $dumpbin = Get-ChildItem -Path "$vs" -Filter dumpbin.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $dumpbin) { Write-Error "dumpbin not found"; exit 1 }
+          Write-Host "=== dumpbin /headers icuin.lib (win32) ==="
+          & $dumpbin /headers "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          Write-Host "=== dumpbin /headers icuuc.lib (win32) ==="
+          & $dumpbin /headers "C:\icu4c-32\lib\icuuc.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+          Write-Host "=== dumpbin /headers icudt.lib (win32) ==="
+          & $dumpbin /headers "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "machine|numberofsections|size of image"
+
+      - name: Dump ICU exports (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          if (-not (Test-Path $vswhere)) { Write-Error "vswhere not found"; exit 1 }
+          $vs = & $vswhere -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (-not $vs) { Write-Error "VS with VC tools not found"; exit 1 }
+          $dumpbin = Get-ChildItem -Path "$vs" -Filter dumpbin.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName
+          if (-not $dumpbin) { Write-Error "dumpbin not found"; exit 1 }
+
+          Write-Host "=== dumpbin /linkermember:1 icuuc.lib (win32) ==="
+          & $dumpbin /linkermember:1 "C:\icu4c-32\lib\icuuc.lib" | Select-String -Pattern "u_errorName_78|ByteSink|MessageFormat|UnicodeString"
+          Write-Host "=== dumpbin /linkermember:1 icuin.lib (win32) ==="
+          & $dumpbin /linkermember:1 "C:\icu4c-32\lib\icuin.lib" | Select-String -Pattern "MessageFormat|UnicodeString"
+          Write-Host "=== dumpbin /linkermember:1 icudt.lib (win32) ==="
+          & $dumpbin /linkermember:1 "C:\icu4c-32\lib\icudt.lib" | Select-String -Pattern "u_errorName_78"
+
 
       - name: Build sdist
         if: ${{ matrix.os == 'linux' }}
