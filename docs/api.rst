@@ -64,4 +64,3 @@ This module wraps ICU’s MessageFormat V1 functionality.
       'Alice invites Bob to the party.'
       >>> fmt.format({"num_guests": 5, "host": "Alice", "guest": "Bob"})
       'Alice invites Bob and 4 other people to the party.'
-      ```
