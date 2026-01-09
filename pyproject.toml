@@ -77,11 +77,6 @@ linux.archs = [ "x86_64", "i686", "aarch64" ]
 macos.archs = [ "x86_64", "universal2" ]
 windows.archs = [ "AMD64", "x86", "ARM64" ]
 
-# Disable bundling, use the system ICU library on all platforms
-repair-wheel-command = ""
-macos.repair-wheel-command = ""
-linux.repair-wheel-command = ""
-
 # Install icu on all platforms
 linux.before-all = "yum install -y libicu-devel"
 macos.before-all = "brew install icu4c"
