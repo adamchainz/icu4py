@@ -46,6 +46,7 @@ urls.Repository = "https://github.com/adamchainz/icu4py"
 [dependency-groups]
 test = [
   "coverage[toml]",
+  "mypy>=1.19.1",
   "pytest",
   "pytest-randomly",
 ]
