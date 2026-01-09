@@ -254,7 +254,7 @@ PyTypeObject MessageFormatType = {
     MessageFormat_new, /* tp_new */
 };
 
-int icu_ext_exec(PyObject* m) {
+int icu4py_messageformat_exec(PyObject* m) {
     if (PyType_Ready(&MessageFormatType) < 0) {
         return -1;
     }
@@ -269,8 +269,8 @@ int icu_ext_exec(PyObject* m) {
     return 0;
 }
 
-PyModuleDef_Slot icu_ext_slots[] = {
-    {Py_mod_exec, reinterpret_cast<void*>(icu_ext_exec)},
+PyModuleDef_Slot icu4py_messageformat_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>(icu4py_messageformat_exec)},
 #ifdef Py_GIL_DISABLED
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
 #endif
@@ -283,11 +283,11 @@ PyModuleDef icumodule = {
     "", /* m_doc */
     0, /* m_size */
     nullptr, /* m_methods */
-    icu_ext_slots, /* m_slots */
+    icu4py_messageformat_slots, /* m_slots */
 };
 
 }  // anonymous namespace
 
-PyMODINIT_FUNC PyInit__ext() {
+PyMODINIT_FUNC PyInit_messageformat() {
     return PyModuleDef_Init(&icumodule);
 }
