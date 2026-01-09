@@ -104,8 +104,7 @@ jobs:
         os:
         - linux
         - macos
-        # Windows builds disabled due to unresolved failures
-        # - windows
+        - windows
 
     runs-on:
       ${{
