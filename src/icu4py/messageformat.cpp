@@ -78,11 +78,12 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable) {
     }
 
     if (PyUnicode_Check(obj)) {
-        const char* str_val = PyUnicode_AsUTF8(obj);
+        Py_ssize_t size;
+        const char* str_val = PyUnicode_AsUTF8AndSize(obj, &size);
         if (str_val == nullptr) {
             return false;
         }
-        formattable = Formattable(UnicodeString::fromUTF8(str_val));
+        formattable = Formattable(UnicodeString::fromUTF8(StringPiece(str_val, size)));
         return true;
     }
 
@@ -204,7 +205,7 @@ PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
 
     std::string utf8;
     result.toUTF8String(utf8);
-    return PyUnicode_FromString(utf8.c_str());
+    return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
 }
 
 PyMethodDef MessageFormat_methods[] = {

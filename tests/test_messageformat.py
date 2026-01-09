@@ -322,3 +322,16 @@ class TestMessageFormat:
         assert fmt.format({"hours": 1.0}) == "1 hour"
         assert fmt.format({"hours": 1.5}) == "1.5 hours"
         assert fmt.format({"hours": 2.5}) == "2.5 hours"
+
+    def test_null_character_in_output(self):
+        """Test that null characters in formatted output are preserved."""
+        pattern = "{text}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        # Create a string with embedded null character
+        text_with_null = "before\x00after"
+        result = fmt.format({"text": text_with_null})
+
+        # The result should preserve the null character
+        assert result == "before\x00after"
+        assert len(result) == 12  # 6 + 1 (null) + 5
