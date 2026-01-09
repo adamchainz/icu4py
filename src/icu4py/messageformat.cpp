@@ -142,13 +142,14 @@ bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
             break;
         }
 
-        const char* key_str = PyUnicode_AsUTF8(key);
+        Py_ssize_t key_size;
+        const char* key_str = PyUnicode_AsUTF8AndSize(key, &key_size);
         if (key_str == nullptr) {
             PyErr_SetString(PyExc_TypeError, "Dictionary keys must be strings");
             err = true;
             break;
         }
-        names_ptr[i] = UnicodeString::fromUTF8(key_str);
+        names_ptr[i] = UnicodeString::fromUTF8(StringPiece(key_str, key_size));
 
         if (!pyobject_to_formattable(value, values_ptr[i])) {
             PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
