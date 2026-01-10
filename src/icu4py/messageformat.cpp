@@ -10,6 +10,7 @@
 
 #include <cstring>
 #include <memory>
+#include <limits>
 
 namespace {
 
@@ -81,14 +82,19 @@ int MessageFormat_init(MessageFormatObject* self, PyObject* args, PyObject* kwds
 }
 
 bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleState* state) {
-    if (PyLong_Check(obj)) {
-        long long_val = PyLong_AsLongLong(obj);
-        if (long_val == -1 && PyErr_Occurred()) {
-            return false;
-        }
-        formattable = Formattable(static_cast<int64_t>(long_val));
-        return true;
-    }
+  if (PyLong_Check(obj)) {
+      int overflow;
+      long long long_val = PyLong_AsLongLongAndOverflow(obj, &overflow);
+      if (overflow != 0) {
+          PyErr_SetString(PyExc_OverflowError, "Integer value out of range for int64");
+          return false;
+      }
+      if (long_val == -1 && PyErr_Occurred()) {
+          return false;
+      }
+      formattable = Formattable(static_cast<int64_t>(long_val));
+      return true;
+  }
 
     if (PyUnicode_Check(obj)) {
         Py_ssize_t size;
@@ -258,7 +264,9 @@ bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
         Py_DECREF(module);
 
         if (!pyobject_to_formattable(value, values_ptr[i], mod_state)) {
-            PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
+            if (!PyErr_Occurred()) {
+                PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
+            }
             err = true;
             break;
         }
