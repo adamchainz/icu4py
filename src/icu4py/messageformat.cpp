@@ -24,6 +24,7 @@ struct ModuleState {
     PyObject* datetime_datetime_type;
     PyObject* datetime_date_type;
     PyObject* datetime_time_type;
+    PyObject* decimal_decimal_type;
 };
 
 static inline ModuleState* get_module_state(PyObject* module) {
@@ -105,64 +106,93 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
         return true;
     }
 
-    if (state != nullptr && state->datetime_datetime_type != nullptr && state->datetime_date_type != nullptr) {
-        int is_datetime = PyObject_IsInstance(obj, state->datetime_datetime_type);
-        int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
-
-        if (is_datetime == 1) {
-            PyObject* timestamp = PyObject_CallMethod(obj, "timestamp", nullptr);
-            if (timestamp == nullptr) {
-                return false;
-            }
-            double timestamp_seconds = PyFloat_AsDouble(timestamp);
-            Py_DECREF(timestamp);
-            if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
-                return false;
-            }
-            UDate udate = timestamp_seconds * 1000.0;
-            formattable = Formattable(udate, Formattable::kIsDate);
-            return true;
-        } else if (is_date == 1) {
-            PyObject* combine = PyObject_GetAttrString(state->datetime_datetime_type, "combine");
-            if (combine == nullptr) {
-                return false;
-            }
-
-            if (state->datetime_time_type == nullptr) {
-                Py_DECREF(combine);
-                return false;
-            }
-
-            PyObject* min_time = PyObject_CallNoArgs(state->datetime_time_type);
-            if (min_time == nullptr) {
-                Py_DECREF(combine);
-                return false;
-            }
-
-            PyObject* dt = PyObject_CallFunctionObjArgs(combine, obj, min_time, nullptr);
-            Py_DECREF(combine);
-            Py_DECREF(min_time);
-            if (dt == nullptr) {
-                return false;
-            }
-
-            PyObject* timestamp = PyObject_CallMethod(dt, "timestamp", nullptr);
-            Py_DECREF(dt);
-            if (timestamp == nullptr) {
-                return false;
-            }
-            double timestamp_seconds = PyFloat_AsDouble(timestamp);
-            Py_DECREF(timestamp);
-            if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
-                return false;
-            }
-            UDate udate = timestamp_seconds * 1000.0;
-            formattable = Formattable(udate, Formattable::kIsDate);
-            return true;
+    int is_decimal = PyObject_IsInstance(obj, state->decimal_decimal_type);
+    if (is_decimal == -1) {
+        return false;
+    } else if (is_decimal == 1) {
+        PyObject* str_obj = PyObject_Str(obj);
+        if (str_obj == nullptr) {
+            return false;
         }
+        Py_ssize_t size;
+        const char* str_val = PyUnicode_AsUTF8AndSize(str_obj, &size);
+        if (str_val == nullptr) {
+            Py_DECREF(str_obj);
+            return false;
+        }
+        UErrorCode status = U_ZERO_ERROR;
+        formattable = Formattable(StringPiece(str_val, size), status);
+        Py_DECREF(str_obj);
+        if (U_FAILURE(status)) {
+            PyErr_Format(PyExc_ValueError, "Failed to create Formattable from Decimal: %s",
+                          u_errorName(status));
+            return false;
+        }
+        return true;
     }
 
-    PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, datetime, or date");
+    int is_datetime = PyObject_IsInstance(obj, state->datetime_datetime_type);
+    if (is_datetime == -1) {
+        return false;
+    }
+    int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
+    if (is_date == -1) {
+        return false;
+    }
+
+    if (is_datetime == 1) {
+        PyObject* timestamp = PyObject_CallMethod(obj, "timestamp", nullptr);
+        if (timestamp == nullptr) {
+            return false;
+        }
+        double timestamp_seconds = PyFloat_AsDouble(timestamp);
+        Py_DECREF(timestamp);
+        if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
+            return false;
+        }
+        UDate udate = timestamp_seconds * 1000.0;
+        formattable = Formattable(udate, Formattable::kIsDate);
+        return true;
+    } else if (is_date == 1) {
+        PyObject* combine = PyObject_GetAttrString(state->datetime_datetime_type, "combine");
+        if (combine == nullptr) {
+            return false;
+        }
+
+        if (state->datetime_time_type == nullptr) {
+            Py_DECREF(combine);
+            return false;
+        }
+
+        PyObject* min_time = PyObject_CallNoArgs(state->datetime_time_type);
+        if (min_time == nullptr) {
+            Py_DECREF(combine);
+            return false;
+        }
+
+        PyObject* dt = PyObject_CallFunctionObjArgs(combine, obj, min_time, nullptr);
+        Py_DECREF(combine);
+        Py_DECREF(min_time);
+        if (dt == nullptr) {
+            return false;
+        }
+
+        PyObject* timestamp = PyObject_CallMethod(dt, "timestamp", nullptr);
+        Py_DECREF(dt);
+        if (timestamp == nullptr) {
+            return false;
+        }
+        double timestamp_seconds = PyFloat_AsDouble(timestamp);
+        Py_DECREF(timestamp);
+        if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
+            return false;
+        }
+        UDate udate = timestamp_seconds * 1000.0;
+        formattable = Formattable(udate, Formattable::kIsDate);
+        return true;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, Decimal, datetime, or date");
     return false;
 }
 
@@ -363,6 +393,18 @@ int icu4py_messageformat_exec(PyObject* m) {
         return -1;
     }
 
+    PyObject* decimal_module = PyImport_ImportModule("decimal");
+    if (decimal_module == nullptr) {
+        return -1;
+    }
+
+    state->decimal_decimal_type = PyObject_GetAttrString(decimal_module, "Decimal");
+    Py_DECREF(decimal_module);
+
+    if (state->decimal_decimal_type == nullptr) {
+        return -1;
+    }
+
     return 0;
 }
 
@@ -371,6 +413,7 @@ int icu4py_messageformat_traverse(PyObject* m, visitproc visit, void* arg) {
     Py_VISIT(state->datetime_datetime_type);
     Py_VISIT(state->datetime_date_type);
     Py_VISIT(state->datetime_time_type);
+    Py_VISIT(state->decimal_decimal_type);
     return 0;
 }
 
@@ -379,6 +422,7 @@ int icu4py_messageformat_clear(PyObject* m) {
     Py_CLEAR(state->datetime_datetime_type);
     Py_CLEAR(state->datetime_date_type);
     Py_CLEAR(state->datetime_time_type);
+    Py_CLEAR(state->decimal_decimal_type);
     return 0;
 }
 

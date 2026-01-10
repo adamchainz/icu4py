@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from decimal import Decimal
 
 from icu4py.messageformat import MessageFormat
 
@@ -325,82 +326,129 @@ class TestMessageFormat:
         assert fmt.format({"hours": 1.5}) == "1.5 hours"
         assert fmt.format({"hours": 2.5}) == "2.5 hours"
 
+    def test_decimal_basic(self):
+        pattern = "Price: {price}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        assert fmt.format({"price": Decimal("19.99")}) == "Price: 19.99"
+        assert fmt.format({"price": Decimal("0.01")}) == "Price: 0.01"
+
+    def test_decimal_high_precision(self):
+        pattern = "Value: {val,number,#.####################}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        result = fmt.format({"val": Decimal("3.141592653589793238462643383279")})
+        assert result == "Value: 3.14159265358979323846"
+
+    def test_decimal_large_numbers(self):
+        pattern = "Amount: {amount,number,#.##}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        large_decimal = Decimal("99999999999999999999999999.99")
+        result = fmt.format({"amount": large_decimal})
+        assert result == "Amount: 99999999999999999999999999.99"
+
+    def test_decimal_in_plural(self):
+        pattern = "{count, plural, =0 {no items} =1 {one item} other {# items}}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        assert fmt.format({"count": Decimal("0")}) == "no items"
+        assert fmt.format({"count": Decimal("1")}) == "one item"
+        assert fmt.format({"count": Decimal("5")}) == "5 items"
+
+    def test_decimal_negative_and_zero(self):
+        pattern = "Balance: {balance}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        assert fmt.format({"balance": Decimal("0")}) == "Balance: 0"
+        assert fmt.format({"balance": Decimal("-42.50")}) == "Balance: -42.5"
+
+    def test_decimal_scientific_notation(self):
+        pattern = "Scientific: {val}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        result = fmt.format({"val": Decimal("1.23E+10")})
+        assert result == "Scientific: 12,300,000,000"
+
     def test_date_object(self):
-        pattern = "Birthday: {birthday, date, long}"
+        pattern = "Birthday: {birthday,date,long}"
         fmt = MessageFormat(pattern, "en_US")
 
         d = date(1990, 5, 25)
         result = fmt.format({"birthday": d})
-        assert "1990" in result
-        assert "May" in result or "5" in result
+        assert result == "Birthday: May 25, 1990"
 
     def test_datetime_basic(self):
-        pattern = "Event at {when, date, short}"
+        pattern = "Event at {when,date,short}"
         fmt = MessageFormat(pattern, "en_US")
 
         dt = datetime(2024, 1, 15, 14, 30, 0)
         result = fmt.format({"when": dt})
-        assert "1/15/24" in result
+        assert result == "Event at 1/15/24"
+
+    def test_datetime_basic_different_locale(self):
+        pattern = "Event at {when,date,short}"
+        fmt = MessageFormat(pattern, "en_GB")
+
+        dt = datetime(2024, 1, 15, 14, 30, 0)
+        result = fmt.format({"when": dt})
+        assert result == "Event at 15/01/2024"
 
     def test_datetime_with_time(self):
-        pattern = "Meeting at {when, time, short}"
+        pattern = "Meeting at {when,time,short}"
         fmt = MessageFormat(pattern, "en_US")
 
         dt = datetime(2024, 1, 15, 14, 30, 0)
         result = fmt.format({"when": dt})
-        assert "2:30" in result or "14:30" in result
+        assert result == "Meeting at 2:30\u202fPM"
 
     def test_datetime_full_format(self):
-        pattern = "Scheduled for {when, date, full} at {when, time, medium}"
+        pattern = "Scheduled for {when,date,full} at {when,time,medium}"
         fmt = MessageFormat(pattern, "en_US")
 
         dt = datetime(2024, 6, 20, 15, 45, 30)
         result = fmt.format({"when": dt})
-        assert "2024" in result
-        assert "June" in result or "6" in result
+        assert result == "Scheduled for Thursday, June 20, 2024 at 3:45:30\u202fPM"
 
     def test_datetime_with_timezone(self):
-        pattern = "Time: {timestamp, date, short}"
+        pattern = "Time: {timestamp,date,short}"
         fmt = MessageFormat(pattern, "en_US")
 
         dt = datetime(2024, 3, 10, 12, 0, 0, tzinfo=timezone.utc)
         result = fmt.format({"timestamp": dt})
-        assert "3/10/24" in result
+        assert result == "Time: 3/10/24"
 
     def test_datetime_different_locales(self):
-        pattern = "Date: {when, date, medium}"
+        pattern = "Date: {when,date,medium}"
 
         dt = datetime(2024, 12, 25, 10, 30, 0)
 
         fmt_us = MessageFormat(pattern, "en_US")
         result_us = fmt_us.format({"when": dt})
-        assert "Dec" in result_us or "12" in result_us
+        assert result_us == "Date: Dec 25, 2024"
 
         fmt_fr = MessageFormat(pattern, "fr_FR")
         result_fr = fmt_fr.format({"when": dt})
-        assert "déc" in result_fr or "12" in result_fr
+        assert result_fr == "Date: 25 déc. 2024"
 
     def test_mixed_datetime_and_other_types(self):
-        pattern = "{name} has an appointment on {when, date, short} with {count} items"
+        pattern = "{name} has an appointment on {when,date,short} with {count} items"
         fmt = MessageFormat(pattern, "en_US")
 
         dt = datetime(2024, 7, 4, 9, 0, 0)
         result = fmt.format({"name": "Alice", "when": dt, "count": 3})
-        assert "Alice" in result
-        assert "7/4/24" in result or "4/7/24" in result
-        assert "3" in result
+        assert result == "Alice has an appointment on 7/4/24 with 3 items"
 
     def test_datetime_in_plural_context(self):
-        pattern = "{count, plural, one {# event on {when, date, short}} other {# events on {when, date, short}}}"
+        pattern = "{count, plural, one {# event on {when,date,short}} other {# events on {when,date,short}}}"
         fmt = MessageFormat(pattern, "en_US")
 
         dt = datetime(2024, 8, 15, 0, 0, 0)
         result = fmt.format({"count": 1, "when": dt})
-        assert "1 event" in result
-        assert "8/15/24" in result
+        assert result == "1 event on 8/15/24"
 
         result = fmt.format({"count": 5, "when": dt})
-        assert "5 events" in result
+        assert result == "5 events on 8/15/24"
 
     def test_null_character_in_output(self):
         pattern = "{text}"
