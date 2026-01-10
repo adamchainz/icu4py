@@ -33,6 +33,34 @@ static inline ModuleState* get_module_state(PyObject* module) {
     return static_cast<ModuleState*>(state);
 }
 
+int icu4py_messageformat_exec(PyObject* m);
+int icu4py_messageformat_traverse(PyObject* m, visitproc visit, void* arg);
+int icu4py_messageformat_clear(PyObject* m);
+
+PyMethodDef icu4py_messageformat_module_methods[] = {
+    {nullptr, nullptr, 0, nullptr}
+};
+
+PyModuleDef_Slot icu4py_messageformat_slots[] = {
+    {Py_mod_exec, reinterpret_cast<void*>(icu4py_messageformat_exec)},
+#ifdef Py_GIL_DISABLED
+    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
+#endif
+    {0, nullptr}
+};
+
+static PyModuleDef icu4pymodule = {
+    PyModuleDef_HEAD_INIT,
+    "icu4py.messageformat",
+    "",
+    sizeof(ModuleState),
+    icu4py_messageformat_module_methods,
+    icu4py_messageformat_slots,
+    icu4py_messageformat_traverse,
+    icu4py_messageformat_clear,
+    nullptr,
+};
+
 struct MessageFormatObject {
     PyObject_HEAD
     MessageFormat* formatter;
@@ -164,12 +192,7 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
             return false;
         }
 
-        if (state->datetime_time_type == nullptr) {
-            Py_DECREF(combine);
-            return false;
-        }
-
-        PyObject* min_time = PyObject_CallNoArgs(state->datetime_time_type);
+        PyObject* min_time = PyObject_GetAttrString(state->datetime_time_type, "min");
         if (min_time == nullptr) {
             Py_DECREF(combine);
             return false;
@@ -201,7 +224,7 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
     return false;
 }
 
-bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
+bool dict_to_parallel_arrays(PyObject* dict, ModuleState* mod_state, UnicodeString*& names,
                              Formattable*& values, int32_t& count) {
     if (!PyDict_Check(dict)) {
         PyErr_SetString(PyExc_TypeError, "Argument must be a dictionary");
@@ -255,14 +278,6 @@ bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
         }
         names_ptr[i] = UnicodeString::fromUTF8(StringPiece(key_str, key_size));
 
-        PyObject* module = PyImport_ImportModule("icu4py.messageformat");
-        if (module == nullptr) {
-            err = true;
-            break;
-        }
-        ModuleState* mod_state = get_module_state(module);
-        Py_DECREF(module);
-
         if (!pyobject_to_formattable(value, values_ptr[i], mod_state)) {
             if (!PyErr_Occurred()) {
                 PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
@@ -291,11 +306,21 @@ PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
         return nullptr;
     }
 
+#if PY_VERSION_HEX < 0x030B0000
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
+#else
+    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
+#endif
+    if (module == nullptr) {
+        return nullptr;
+    }
+    ModuleState* mod_state = get_module_state(module);
+
     UnicodeString* argumentNames = nullptr;
     Formattable* arguments = nullptr;
     int32_t count = 0;
 
-    if (!dict_to_parallel_arrays(params_dict, argumentNames, arguments, count)) {
+    if (!dict_to_parallel_arrays(params_dict, mod_state, argumentNames, arguments, count)) {
         return nullptr;
     }
 
@@ -329,56 +354,31 @@ PyMethodDef MessageFormat_methods[] = {
     {nullptr, nullptr, 0, nullptr}
 };
 
-PyTypeObject MessageFormatType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)
-    "icu4py.messageformat.MessageFormat", /* tp_name */
-    sizeof(MessageFormatObject), /* tp_basicsize */
-    0, /* tp_itemsize */
-    reinterpret_cast<destructor>(MessageFormat_dealloc), /* tp_dealloc */
-    0, /* tp_vectorcall_offset */
-    nullptr, /* tp_getattr */
-    nullptr, /* tp_setattr */
-    nullptr, /* tp_as_async */
-    nullptr, /* tp_repr */
-    nullptr, /* tp_as_number */
-    nullptr, /* tp_as_sequence */
-    nullptr, /* tp_as_mapping */
-    nullptr, /* tp_hash */
-    nullptr, /* tp_call */
-    nullptr, /* tp_str */
-    nullptr, /* tp_getattro */
-    nullptr, /* tp_setattro */
-    nullptr, /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT, /* tp_flags */
-    "ICU MessageFormat", /* tp_doc */
-    nullptr, /* tp_traverse */
-    nullptr, /* tp_clear */
-    nullptr, /* tp_richcompare */
-    0, /* tp_weaklistoffset */
-    nullptr, /* tp_iter */
-    nullptr, /* tp_iternext */
-    MessageFormat_methods, /* tp_methods */
-    nullptr, /* tp_members */
-    nullptr, /* tp_getset */
-    nullptr, /* tp_base */
-    nullptr, /* tp_dict */
-    nullptr, /* tp_descr_get */
-    nullptr, /* tp_descr_set */
-    0, /* tp_dictoffset */
-    reinterpret_cast<initproc>(MessageFormat_init), /* tp_init */
-    nullptr, /* tp_alloc */
-    MessageFormat_new, /* tp_new */
+PyType_Slot MessageFormat_slots[] = {
+    {Py_tp_doc, const_cast<char*>("ICU MessageFormat")},
+    {Py_tp_dealloc, reinterpret_cast<void*>(MessageFormat_dealloc)},
+    {Py_tp_init, reinterpret_cast<void*>(MessageFormat_init)},
+    {Py_tp_new, reinterpret_cast<void*>(MessageFormat_new)},
+    {Py_tp_methods, MessageFormat_methods},
+    {0, nullptr}
+};
+
+PyType_Spec MessageFormat_spec = {
+    "icu4py.messageformat.MessageFormat",
+    sizeof(MessageFormatObject),
+    0,
+    Py_TPFLAGS_DEFAULT,
+    MessageFormat_slots
 };
 
 int icu4py_messageformat_exec(PyObject* m) {
-    if (PyType_Ready(&MessageFormatType) < 0) {
+    PyObject* type_obj = PyType_FromModuleAndSpec(m, &MessageFormat_spec, nullptr);
+    if (type_obj == nullptr) {
         return -1;
     }
 
-    Py_INCREF(&MessageFormatType);
-    if (PyModule_AddObject(m, "MessageFormat",
-                          reinterpret_cast<PyObject*>(&MessageFormatType)) < 0) {
-        Py_DECREF(&MessageFormatType);
+    if (PyModule_AddObject(m, "MessageFormat", type_obj) < 0) {
+        Py_DECREF(type_obj);
         return -1;
     }
 
@@ -433,32 +433,8 @@ int icu4py_messageformat_clear(PyObject* m) {
     return 0;
 }
 
-PyModuleDef_Slot icu4py_messageformat_slots[] = {
-    {Py_mod_exec, reinterpret_cast<void*>(icu4py_messageformat_exec)},
-#ifdef Py_GIL_DISABLED
-    {Py_mod_gil, Py_MOD_GIL_NOT_USED},
-#endif
-    {0, nullptr}
-};
-
-PyMethodDef icu4py_messageformat_module_methods[] = {
-    {nullptr, nullptr, 0, nullptr}
-};
-
-static PyModuleDef icumodule = {
-    PyModuleDef_HEAD_INIT,
-    "icu4py.messageformat", /* m_name */
-    "", /* m_doc */
-    sizeof(ModuleState), /* m_size */
-    icu4py_messageformat_module_methods, /* m_methods */
-    icu4py_messageformat_slots, /* m_slots */
-    icu4py_messageformat_traverse, /* m_traverse */
-    icu4py_messageformat_clear, /* m_clear */
-    nullptr, /* m_free */
-};
-
 }  // anonymous namespace
 
 PyMODINIT_FUNC PyInit_messageformat() {
-    return PyModuleDef_Init(&icumodule);
+    return PyModuleDef_Init(&icu4pymodule);
 }
