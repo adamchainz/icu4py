@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from datetime import date, datetime, timezone
+
 from icu4py.messageformat import MessageFormat
 
 
@@ -322,6 +324,83 @@ class TestMessageFormat:
         assert fmt.format({"hours": 1.0}) == "1 hour"
         assert fmt.format({"hours": 1.5}) == "1.5 hours"
         assert fmt.format({"hours": 2.5}) == "2.5 hours"
+
+    def test_date_object(self):
+        pattern = "Birthday: {birthday, date, long}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        d = date(1990, 5, 25)
+        result = fmt.format({"birthday": d})
+        assert "1990" in result
+        assert "May" in result or "5" in result
+
+    def test_datetime_basic(self):
+        pattern = "Event at {when, date, short}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        dt = datetime(2024, 1, 15, 14, 30, 0)
+        result = fmt.format({"when": dt})
+        assert "1/15/24" in result
+
+    def test_datetime_with_time(self):
+        pattern = "Meeting at {when, time, short}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        dt = datetime(2024, 1, 15, 14, 30, 0)
+        result = fmt.format({"when": dt})
+        assert "2:30" in result or "14:30" in result
+
+    def test_datetime_full_format(self):
+        pattern = "Scheduled for {when, date, full} at {when, time, medium}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        dt = datetime(2024, 6, 20, 15, 45, 30)
+        result = fmt.format({"when": dt})
+        assert "2024" in result
+        assert "June" in result or "6" in result
+
+    def test_datetime_with_timezone(self):
+        pattern = "Time: {timestamp, date, short}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        dt = datetime(2024, 3, 10, 12, 0, 0, tzinfo=timezone.utc)
+        result = fmt.format({"timestamp": dt})
+        assert "3/10/24" in result
+
+    def test_datetime_different_locales(self):
+        pattern = "Date: {when, date, medium}"
+
+        dt = datetime(2024, 12, 25, 10, 30, 0)
+
+        fmt_us = MessageFormat(pattern, "en_US")
+        result_us = fmt_us.format({"when": dt})
+        assert "Dec" in result_us or "12" in result_us
+
+        fmt_fr = MessageFormat(pattern, "fr_FR")
+        result_fr = fmt_fr.format({"when": dt})
+        assert "déc" in result_fr or "12" in result_fr
+
+    def test_mixed_datetime_and_other_types(self):
+        pattern = "{name} has an appointment on {when, date, short} with {count} items"
+        fmt = MessageFormat(pattern, "en_US")
+
+        dt = datetime(2024, 7, 4, 9, 0, 0)
+        result = fmt.format({"name": "Alice", "when": dt, "count": 3})
+        assert "Alice" in result
+        assert "7/4/24" in result or "4/7/24" in result
+        assert "3" in result
+
+    def test_datetime_in_plural_context(self):
+        pattern = "{count, plural, one {# event on {when, date, short}} other {# events on {when, date, short}}}"
+        fmt = MessageFormat(pattern, "en_US")
+
+        dt = datetime(2024, 8, 15, 0, 0, 0)
+        result = fmt.format({"count": 1, "when": dt})
+        assert "1 event" in result
+        assert "8/15/24" in result
+
+        result = fmt.format({"count": 5, "when": dt})
+        assert "5 events" in result
 
     def test_null_character_in_output(self):
         pattern = "{text}"
