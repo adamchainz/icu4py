@@ -11,3 +11,4 @@ extend-ignore-re = [
 
 [default.extend-words]
   nd = "nd"
+  udate = "udate"

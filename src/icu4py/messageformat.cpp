@@ -6,6 +6,7 @@
 #include <unicode/locid.h>
 #include <unicode/parsepos.h>
 #include <unicode/ustring.h>
+#include <unicode/utypes.h>
 
 #include <cstring>
 #include <memory>
@@ -18,6 +19,17 @@ using icu::Formattable;
 using icu::Locale;
 using icu::FieldPosition;
 using icu::StringPiece;
+
+struct ModuleState {
+    PyObject* datetime_datetime_type;
+    PyObject* datetime_date_type;
+    PyObject* datetime_time_type;
+};
+
+static inline ModuleState* get_module_state(PyObject* module) {
+    void* state = PyModule_GetState(module);
+    return static_cast<ModuleState*>(state);
+}
 
 struct MessageFormatObject {
     PyObject_HEAD
@@ -67,7 +79,7 @@ int MessageFormat_init(MessageFormatObject* self, PyObject* args, PyObject* kwds
     return 0;
 }
 
-bool pyobject_to_formattable(PyObject* obj, Formattable& formattable) {
+bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleState* state) {
     if (PyLong_Check(obj)) {
         long long_val = PyLong_AsLongLong(obj);
         if (long_val == -1 && PyErr_Occurred()) {
@@ -93,7 +105,64 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable) {
         return true;
     }
 
-    PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, or str");
+    if (state != nullptr && state->datetime_datetime_type != nullptr && state->datetime_date_type != nullptr) {
+        int is_datetime = PyObject_IsInstance(obj, state->datetime_datetime_type);
+        int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
+
+        if (is_datetime == 1) {
+            PyObject* timestamp = PyObject_CallMethod(obj, "timestamp", nullptr);
+            if (timestamp == nullptr) {
+                return false;
+            }
+            double timestamp_seconds = PyFloat_AsDouble(timestamp);
+            Py_DECREF(timestamp);
+            if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
+                return false;
+            }
+            UDate udate = timestamp_seconds * 1000.0;
+            formattable = Formattable(udate, Formattable::kIsDate);
+            return true;
+        } else if (is_date == 1) {
+            PyObject* combine = PyObject_GetAttrString(state->datetime_datetime_type, "combine");
+            if (combine == nullptr) {
+                return false;
+            }
+
+            if (state->datetime_time_type == nullptr) {
+                Py_DECREF(combine);
+                return false;
+            }
+
+            PyObject* min_time = PyObject_CallNoArgs(state->datetime_time_type);
+            if (min_time == nullptr) {
+                Py_DECREF(combine);
+                return false;
+            }
+
+            PyObject* dt = PyObject_CallFunctionObjArgs(combine, obj, min_time, nullptr);
+            Py_DECREF(combine);
+            Py_DECREF(min_time);
+            if (dt == nullptr) {
+                return false;
+            }
+
+            PyObject* timestamp = PyObject_CallMethod(dt, "timestamp", nullptr);
+            Py_DECREF(dt);
+            if (timestamp == nullptr) {
+                return false;
+            }
+            double timestamp_seconds = PyFloat_AsDouble(timestamp);
+            Py_DECREF(timestamp);
+            if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
+                return false;
+            }
+            UDate udate = timestamp_seconds * 1000.0;
+            formattable = Formattable(udate, Formattable::kIsDate);
+            return true;
+        }
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, datetime, or date");
     return false;
 }
 
@@ -151,7 +220,15 @@ bool dict_to_parallel_arrays(PyObject* dict, UnicodeString*& names,
         }
         names_ptr[i] = UnicodeString::fromUTF8(StringPiece(key_str, key_size));
 
-        if (!pyobject_to_formattable(value, values_ptr[i])) {
+        PyObject* module = PyImport_ImportModule("icu4py.messageformat");
+        if (module == nullptr) {
+            err = true;
+            break;
+        }
+        ModuleState* mod_state = get_module_state(module);
+        Py_DECREF(module);
+
+        if (!pyobject_to_formattable(value, values_ptr[i], mod_state)) {
             PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
             err = true;
             break;
@@ -268,6 +345,40 @@ int icu4py_messageformat_exec(PyObject* m) {
         return -1;
     }
 
+    ModuleState* state = get_module_state(m);
+
+    PyObject* datetime_module = PyImport_ImportModule("datetime");
+    if (datetime_module == nullptr) {
+        return -1;
+    }
+
+    state->datetime_datetime_type = PyObject_GetAttrString(datetime_module, "datetime");
+    state->datetime_date_type = PyObject_GetAttrString(datetime_module, "date");
+    state->datetime_time_type = PyObject_GetAttrString(datetime_module, "time");
+    Py_DECREF(datetime_module);
+
+    if (state->datetime_datetime_type == nullptr ||
+        state->datetime_date_type == nullptr ||
+        state->datetime_time_type == nullptr) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int icu4py_messageformat_traverse(PyObject* m, visitproc visit, void* arg) {
+    ModuleState* state = get_module_state(m);
+    Py_VISIT(state->datetime_datetime_type);
+    Py_VISIT(state->datetime_date_type);
+    Py_VISIT(state->datetime_time_type);
+    return 0;
+}
+
+int icu4py_messageformat_clear(PyObject* m) {
+    ModuleState* state = get_module_state(m);
+    Py_CLEAR(state->datetime_datetime_type);
+    Py_CLEAR(state->datetime_date_type);
+    Py_CLEAR(state->datetime_time_type);
     return 0;
 }
 
@@ -279,13 +390,20 @@ PyModuleDef_Slot icu4py_messageformat_slots[] = {
     {0, nullptr}
 };
 
-PyModuleDef icumodule = {
+PyMethodDef icu4py_messageformat_module_methods[] = {
+    {nullptr, nullptr, 0, nullptr}
+};
+
+static PyModuleDef icumodule = {
     PyModuleDef_HEAD_INIT,
     "icu4py.messageformat", /* m_name */
     "", /* m_doc */
-    0, /* m_size */
-    nullptr, /* m_methods */
+    sizeof(ModuleState), /* m_size */
+    icu4py_messageformat_module_methods, /* m_methods */
     icu4py_messageformat_slots, /* m_slots */
+    icu4py_messageformat_traverse, /* m_traverse */
+    icu4py_messageformat_clear, /* m_clear */
+    nullptr, /* m_free */
 };
 
 }  // anonymous namespace
