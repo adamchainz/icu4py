@@ -27,8 +27,10 @@ This module wraps ICU’s MessageFormat V1 functionality.
 
     :param values: A dictionary of names to values to format the message with.
 
-      Currently supported value types are ``int``, ``float``, ``str``, |date|__, and |datetime|__.
+      Currently supported value types are ``int``, ``float``, ``str``, |Decimal|__, |date|__, and |datetime|__.
 
+      .. |Decimal| replace:: ``decimal.Decimal``
+      __ https://docs.python.org/3/library/decimal.html#decimal.Decimal
       .. |date| replace:: ``datetime.date``
       __ https://docs.python.org/3/library/datetime.html#datetime.date
       .. |datetime| replace:: ``datetime.datetime``
