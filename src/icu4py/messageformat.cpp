@@ -134,13 +134,7 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
     int is_datetime = PyObject_IsInstance(obj, state->datetime_datetime_type);
     if (is_datetime == -1) {
         return false;
-    }
-    int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
-    if (is_date == -1) {
-        return false;
-    }
-
-    if (is_datetime == 1) {
+    } else if (is_datetime == 1) {
         PyObject* timestamp = PyObject_CallMethod(obj, "timestamp", nullptr);
         if (timestamp == nullptr) {
             return false;
@@ -153,6 +147,11 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
         UDate udate = timestamp_seconds * 1000.0;
         formattable = Formattable(udate, Formattable::kIsDate);
         return true;
+    }
+
+    int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
+    if (is_date == -1) {
+        return false;
     } else if (is_date == 1) {
         PyObject* combine = PyObject_GetAttrString(state->datetime_datetime_type, "combine");
         if (combine == nullptr) {
