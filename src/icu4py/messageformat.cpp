@@ -10,7 +10,6 @@
 
 #include <cstring>
 #include <memory>
-#include <limits>
 
 namespace {
 
@@ -110,118 +109,121 @@ int MessageFormat_init(MessageFormatObject* self, PyObject* args, PyObject* kwds
 }
 
 bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleState* state) {
-  if (PyLong_Check(obj)) {
-      int overflow;
-      long long long_val = PyLong_AsLongLongAndOverflow(obj, &overflow);
-      if (overflow != 0) {
-          PyErr_SetString(PyExc_OverflowError, "Integer value out of range for int64");
-          return false;
+    if (PyLong_Check(obj)) {
+        int overflow;
+        long long long_val = PyLong_AsLongLongAndOverflow(obj, &overflow);
+        if (overflow != 0) {
+            PyErr_SetString(PyExc_OverflowError, "Integer value out of range for int64");
+            return false;
+        }
+        if (long_val == -1 && PyErr_Occurred()) {
+            return false;
+        }
+        formattable = Formattable(static_cast<int64_t>(long_val));
+        return true;
+    }
+
+      if (PyUnicode_Check(obj)) {
+          Py_ssize_t size;
+          const char* str_val = PyUnicode_AsUTF8AndSize(obj, &size);
+          if (str_val == nullptr) {
+              return false;
+          }
+          formattable = Formattable(UnicodeString::fromUTF8(StringPiece(str_val, size)));
+          return true;
       }
-      if (long_val == -1 && PyErr_Occurred()) {
-          return false;
+
+      if (PyFloat_Check(obj)) {
+          double dbl_val = PyFloat_AsDouble(obj);
+          if (dbl_val == -1.0 && PyErr_Occurred()) {
+              return false;
+          }
+          formattable = Formattable(dbl_val);
+          return true;
       }
-      formattable = Formattable(static_cast<int64_t>(long_val));
-      return true;
-  }
 
-    if (PyUnicode_Check(obj)) {
-        Py_ssize_t size;
-        const char* str_val = PyUnicode_AsUTF8AndSize(obj, &size);
-        if (str_val == nullptr) {
-            return false;
-        }
-        formattable = Formattable(UnicodeString::fromUTF8(StringPiece(str_val, size)));
-        return true;
-    }
+      int is_decimal = PyObject_IsInstance(obj, state->decimal_decimal_type);
+      if (is_decimal == -1) {
+          return false;
+      } else if (is_decimal == 1) {
+          PyObject* str_obj = PyObject_Str(obj);
+          if (str_obj == nullptr) {
+              return false;
+          }
+          Py_ssize_t size;
+          const char* str_val = PyUnicode_AsUTF8AndSize(str_obj, &size);
+          if (str_val == nullptr) {
+              Py_DECREF(str_obj);
+              return false;
+          }
+          UErrorCode status = U_ZERO_ERROR;
+          formattable = Formattable(StringPiece(str_val, size), status);
+          Py_DECREF(str_obj);
+          if (U_FAILURE(status)) {
+              PyErr_Format(PyExc_ValueError, "Failed to create Formattable from Decimal: %s",
+                            u_errorName(status));
+              return false;
+          }
+          return true;
+      }
 
-    if (PyFloat_Check(obj)) {
-        double dbl_val = PyFloat_AsDouble(obj);
-        formattable = Formattable(dbl_val);
-        return true;
-    }
+      int is_datetime = PyObject_IsInstance(obj, state->datetime_datetime_type);
+      if (is_datetime == -1) {
+          return false;
+      } else if (is_datetime == 1) {
+          PyObject* timestamp = PyObject_CallMethod(obj, "timestamp", nullptr);
+          if (timestamp == nullptr) {
+              return false;
+          }
+          double timestamp_seconds = PyFloat_AsDouble(timestamp);
+          Py_DECREF(timestamp);
+          if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
+              return false;
+          }
+          UDate udate = timestamp_seconds * 1000.0;
+          formattable = Formattable(udate, Formattable::kIsDate);
+          return true;
+      }
 
-    int is_decimal = PyObject_IsInstance(obj, state->decimal_decimal_type);
-    if (is_decimal == -1) {
-        return false;
-    } else if (is_decimal == 1) {
-        PyObject* str_obj = PyObject_Str(obj);
-        if (str_obj == nullptr) {
-            return false;
-        }
-        Py_ssize_t size;
-        const char* str_val = PyUnicode_AsUTF8AndSize(str_obj, &size);
-        if (str_val == nullptr) {
-            Py_DECREF(str_obj);
-            return false;
-        }
-        UErrorCode status = U_ZERO_ERROR;
-        formattable = Formattable(StringPiece(str_val, size), status);
-        Py_DECREF(str_obj);
-        if (U_FAILURE(status)) {
-            PyErr_Format(PyExc_ValueError, "Failed to create Formattable from Decimal: %s",
-                          u_errorName(status));
-            return false;
-        }
-        return true;
-    }
+      int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
+      if (is_date == -1) {
+          return false;
+      } else if (is_date == 1) {
+          PyObject* combine = PyObject_GetAttrString(state->datetime_datetime_type, "combine");
+          if (combine == nullptr) {
+              return false;
+          }
 
-    int is_datetime = PyObject_IsInstance(obj, state->datetime_datetime_type);
-    if (is_datetime == -1) {
-        return false;
-    } else if (is_datetime == 1) {
-        PyObject* timestamp = PyObject_CallMethod(obj, "timestamp", nullptr);
-        if (timestamp == nullptr) {
-            return false;
-        }
-        double timestamp_seconds = PyFloat_AsDouble(timestamp);
-        Py_DECREF(timestamp);
-        if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
-            return false;
-        }
-        UDate udate = timestamp_seconds * 1000.0;
-        formattable = Formattable(udate, Formattable::kIsDate);
-        return true;
-    }
+          PyObject* min_time = PyObject_GetAttrString(state->datetime_time_type, "min");
+          if (min_time == nullptr) {
+              Py_DECREF(combine);
+              return false;
+          }
 
-    int is_date = PyObject_IsInstance(obj, state->datetime_date_type);
-    if (is_date == -1) {
-        return false;
-    } else if (is_date == 1) {
-        PyObject* combine = PyObject_GetAttrString(state->datetime_datetime_type, "combine");
-        if (combine == nullptr) {
-            return false;
-        }
+          PyObject* dt = PyObject_CallFunctionObjArgs(combine, obj, min_time, nullptr);
+          Py_DECREF(combine);
+          Py_DECREF(min_time);
+          if (dt == nullptr) {
+              return false;
+          }
 
-        PyObject* min_time = PyObject_GetAttrString(state->datetime_time_type, "min");
-        if (min_time == nullptr) {
-            Py_DECREF(combine);
-            return false;
-        }
+          PyObject* timestamp = PyObject_CallMethod(dt, "timestamp", nullptr);
+          Py_DECREF(dt);
+          if (timestamp == nullptr) {
+              return false;
+          }
+          double timestamp_seconds = PyFloat_AsDouble(timestamp);
+          Py_DECREF(timestamp);
+          if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
+              return false;
+          }
+          UDate udate = timestamp_seconds * 1000.0;
+          formattable = Formattable(udate, Formattable::kIsDate);
+          return true;
+      }
 
-        PyObject* dt = PyObject_CallFunctionObjArgs(combine, obj, min_time, nullptr);
-        Py_DECREF(combine);
-        Py_DECREF(min_time);
-        if (dt == nullptr) {
-            return false;
-        }
-
-        PyObject* timestamp = PyObject_CallMethod(dt, "timestamp", nullptr);
-        Py_DECREF(dt);
-        if (timestamp == nullptr) {
-            return false;
-        }
-        double timestamp_seconds = PyFloat_AsDouble(timestamp);
-        Py_DECREF(timestamp);
-        if (timestamp_seconds == -1.0 && PyErr_Occurred()) {
-            return false;
-        }
-        UDate udate = timestamp_seconds * 1000.0;
-        formattable = Formattable(udate, Formattable::kIsDate);
-        return true;
-    }
-
-    PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, Decimal, datetime, or date");
-    return false;
+      PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, Decimal, datetime, or date");
+      return false;
 }
 
 bool dict_to_parallel_arrays(PyObject* dict, ModuleState* mod_state, UnicodeString*& names,
