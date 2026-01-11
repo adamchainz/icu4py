@@ -70,3 +70,13 @@ This module wraps ICU’s MessageFormat V1 functionality.
       'Alice invites Bob to the party.'
       >>> fmt.format({"num_guests": 5, "host": "Alice", "guest": "Bob"})
       'Alice invites Bob and 4 other people to the party.'
+
+    Formatting a ``datetime``:
+
+    .. code-block:: pycon
+
+      >>> import datetime as dt
+      >>> from icu4py.messageformat import MessageFormat
+      >>> fmt = MessageFormat("We gotta go back to {when,date,full}", "en_GB")
+      >>> fmt.format({"when": dt.datetime(1985, 10, 26, 1, 24)})
+      'We gotta go back to Saturday, 26 October 1985'
