@@ -43,6 +43,8 @@ PyMethodDef icu4py_messageformat_module_methods[] = {
 
 PyModuleDef_Slot icu4py_messageformat_slots[] = {
     {Py_mod_exec, reinterpret_cast<void*>(icu4py_messageformat_exec)},
+// On Python 3.13+, declare free-threaded support.
+// https://py-free-threading.github.io/porting-extensions/#declaring-free-threaded-support
 #ifdef Py_GIL_DISABLED
     {Py_mod_gil, Py_MOD_GIL_NOT_USED},
 #endif
