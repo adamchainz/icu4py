@@ -12,23 +12,15 @@ Only CPython is supported at this time because ICU uses its C API.
 Installation
 ------------
 
-1. Install ICU4C:
+Install this package, for example with **pip**:
 
-   * **On macOS:** ``brew install icu4c``
+.. code-block:: sh
 
-   * **On Ubuntu/Debian:** ``apt-get install libicu-dev``
+    python -m pip install icu4py
 
-   * **On RHEL/CentOS:** ``yum install libicu-devel``
+Wheels are provided for Linux and macOS.
+The Windows build has unresolved errors, as tracked in `Issue #11 <https://github.com/adamchainz/icu4py/issues/11>`__.
 
-   * **On Windows:** ``vcpkg install icu``
-
-   Version 78+ supported.
-
-2. Install this package, for example with **pip**:
-
-   .. code-block:: sh
-
-      python -m pip install icu4py
-
-   Wheels are provided for Linux and macOS.
-   The Windows build has unresolved errors, as tracked in `Issue #11 <https://github.com/adamchainz/icu4py/issues/11>`__.
+Wheels embed a recent version of ICU.
+Right now, that is at least ICU 78 on most platforms, but for older Linux distributions it is ICU 72.
+`Issue #16 <https://github.com/adamchainz/icu4py/issues/16>`__ tracks using a consistent version across all platforms.
