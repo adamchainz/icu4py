@@ -369,7 +369,7 @@ PyType_Spec MessageFormat_spec = {
     "icu4py.messageformat.MessageFormat",
     sizeof(MessageFormatObject),
     0,
-    Py_TPFLAGS_DEFAULT,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     MessageFormat_slots
 };
 

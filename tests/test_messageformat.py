@@ -487,3 +487,17 @@ class TestMessageFormat:
         result = fmt.format({key_with_null: "value"})
 
         assert result == "value"
+
+    def test_inheritance(self):
+        pattern = "Hello, {name}!"
+
+        class CustomMessageFormat(MessageFormat):
+            def format(
+                self, params: dict[str, int | float | str | Decimal | date | datetime]
+            ) -> str:
+                original = super().format(params)
+                return original.upper()
+
+        fmt = CustomMessageFormat(pattern, "en_US")
+        result = fmt.format({"name": "World"})
+        assert result == "HELLO, WORLD!"

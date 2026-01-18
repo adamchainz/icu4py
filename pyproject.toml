@@ -38,6 +38,9 @@ classifiers = [
   "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
+dependencies = [
+  "typing-extensions>=4.15",
+]
 urls.Changelog = "https://icu4py.readthedocs.io/en/latest/changelog.html"
 urls.Documentation = "https://icu4py.readthedocs.io/"
 urls.Funding = "https://adamj.eu/books/"

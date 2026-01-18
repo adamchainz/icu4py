@@ -302,6 +302,9 @@ wheels = [
 name = "icu4py"
 version = "0.1.0"
 source = { editable = "." }
+dependencies = [
+    { name = "typing-extensions" },
+]
 
 [package.dev-dependencies]
 docs = [
@@ -319,6 +322,7 @@ test = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "typing-extensions", specifier = ">=4.15" }]
 
 [package.metadata.requires-dev]
 docs = [
