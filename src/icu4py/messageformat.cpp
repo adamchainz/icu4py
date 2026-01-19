@@ -351,12 +351,21 @@ PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString result;
 
+    // ICU objects need external synchronization
+#ifdef Py_GIL_DISABLED
+    Py_BEGIN_CRITICAL_SECTION(self);
+#endif
+
     if (count == 0) {
         FieldPosition field_pos;
         result = self->formatter->format(nullptr, 0, result, field_pos, status);
     } else {
         result = self->formatter->format(argumentNames, arguments, count, result, status);
     }
+
+#ifdef Py_GIL_DISABLED
+    Py_END_CRITICAL_SECTION();
+#endif
 
     if (U_FAILURE(status)) {
         PyErr_Format(PyExc_RuntimeError, "Failed to format message: %s",
