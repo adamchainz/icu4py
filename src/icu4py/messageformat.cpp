@@ -115,8 +115,25 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
         int overflow;
         long long long_val = PyLong_AsLongLongAndOverflow(obj, &overflow);
         if (overflow != 0) {
-            PyErr_SetString(PyExc_OverflowError, "Integer value out of range for int64");
-            return false;
+            PyObject* str_obj = PyObject_Str(obj);
+            if (str_obj == nullptr) {
+                return false;
+            }
+            Py_ssize_t size;
+            const char* str_val = PyUnicode_AsUTF8AndSize(str_obj, &size);
+            if (str_val == nullptr) {
+                Py_DECREF(str_obj);
+                return false;
+            }
+            UErrorCode status = U_ZERO_ERROR;
+            formattable = Formattable(StringPiece(str_val, size), status);
+            Py_DECREF(str_obj);
+            if (U_FAILURE(status)) {
+                PyErr_Format(PyExc_ValueError, "Failed to create Formattable from overflowed int: %s",
+                              u_errorName(status));
+                return false;
+            }
+            return true;
         }
         if (long_val == -1 && PyErr_Occurred()) {
             return false;
