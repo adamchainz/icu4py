@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sys
+from functools import partial
 
 from setuptools import Extension, setup
 
@@ -23,15 +24,23 @@ if sys.platform == "darwin":
         "-Wl,-rpath,/usr/local/opt/icu4c/lib",
     ]
 
+ext = partial(
+    Extension,
+    libraries=libraries,
+    extra_compile_args=extra_compile_args,
+    extra_link_args=extra_link_args,
+    language="c++",
+)
+
 setup(
     ext_modules=[
-        Extension(
+        ext(
             "icu4py.messageformat",
             sources=["src/icu4py/messageformat.cpp"],
-            libraries=libraries,
-            extra_compile_args=extra_compile_args,
-            extra_link_args=extra_link_args,
-            language="c++",
-        )
+        ),
+        ext(
+            "icu4py._version",
+            sources=["src/icu4py/_version.cpp"],
+        ),
     ],
 )

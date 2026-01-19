@@ -2,6 +2,21 @@
 API
 ===
 
+``icu4py``
+==========
+
+.. currentmodule:: icu4py
+
+.. data:: icu_version
+  :type: str
+
+  A string representing the ICU version, for example ``"78.2"``.
+
+.. data:: icu_version_info
+  :type: tuple[int, int, int, int]
+
+  A tuple of four integers representing the ICU version in the format ``(major, minor, patch, build)``, for example, ``(78, 2, 0, 0)``.
+
 ``icu4py.messageformat``
 ========================
 
