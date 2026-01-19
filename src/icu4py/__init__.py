@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from icu4py._version import icu_version, icu_version_info
 else:
+    from typing import Any
 
     def __getattr__(name: str) -> Any:
         if name == "icu_version":
