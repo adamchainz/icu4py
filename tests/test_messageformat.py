@@ -3,8 +3,6 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
-import pytest
-
 from icu4py.messageformat import MessageFormat
 
 
@@ -62,7 +60,7 @@ class TestMessageFormat:
         result_fr = fmt_fr.format({"value": 1234567})
         assert result_fr == "Amount: 1\u202f234\u202f567"
 
-    def test_integer_boundaries(self):
+    def test_integer_int64_boundaries(self):
         fmt = MessageFormat("{small} and {big}", "en_US")
         smalluns = -(2**63)
         bigguns = 2**63 - 1
@@ -71,23 +69,29 @@ class TestMessageFormat:
 
         assert result == "-9,223,372,036,854,775,808 and 9,223,372,036,854,775,807"
 
-    def test_integer_overflow_small(self):
+    def test_integer_int64_would_overflow(self):
         fmt = MessageFormat("{num}", "en_US")
+        bigguns = 2**63
 
-        # > int64 max
-        bigguns = 2**63 + 1000
+        result = fmt.format({"num": bigguns})
 
-        with pytest.raises(OverflowError, match="Integer value out of range"):
-            fmt.format({"num": bigguns})
+        assert result == "9,223,372,036,854,775,808"
 
     def test_integer_overflow_big(self):
         fmt = MessageFormat("{num}", "en_US")
+        smalluns = -(2**63)
 
-        # < int64 min
-        smalluns = -(2**63) - 1000
+        result = fmt.format({"num": smalluns})
 
-        with pytest.raises(OverflowError, match="Integer value out of range"):
-            fmt.format({"num": smalluns})
+        assert result == "-9,223,372,036,854,775,808"
+
+    def test_integer_gigantic(self):
+        fmt = MessageFormat("{num}", "en_US")
+        gigantic = 10**30
+
+        result = fmt.format({"num": gigantic})
+
+        assert result == "1,000,000,000,000,000,000,000,000,000,000"
 
     def test_simple_float_substitution(self):
         pattern = "Price: {price}"
