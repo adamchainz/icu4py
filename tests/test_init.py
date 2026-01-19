@@ -8,7 +8,7 @@ import icu4py
 class TestGetAttr:
     def test_getattr_unknown_attribute(self):
         with pytest.raises(AttributeError, match="has no attribute 'nonexistent'"):
-            icu4py.nonexistent  # noqa: B018
+            icu4py.nonexistent  # type: ignore[attr-defined]  # noqa: B018
 
 
 class TestVersionInfo:
