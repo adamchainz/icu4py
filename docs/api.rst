@@ -134,7 +134,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
 
        >>> from icu4py.messageformat import MessageFormat
        >>> pattern = "{count, plural, one {# file} other {# files}}"
-       >>> fmt = MessageFormat(pattern, "en_US")
+       >>> fmt = MessageFormat(pattern, "en_GB")
        >>> fmt.format({"count": 1})
        '1 file'
        >>> fmt.format({"count": 5})
@@ -152,7 +152,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
       ...     "=2 {{host} invites {guest} and one other person to the party.}"
       ...     "other {{host} invites {guest} and # other people to the party.}}"
       ... )
-      >>> fmt = MessageFormat(pattern, "en_US")
+      >>> fmt = MessageFormat(pattern, "en_GB")
       >>> fmt.format({"num_guests": 0, "host": "Alice", "guest": "Bob"})
       'Alice does not throw a party.'
       >>> fmt.format({"num_guests": 1, "host": "Alice", "guest": "Bob"})
