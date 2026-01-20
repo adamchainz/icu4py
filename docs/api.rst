@@ -29,7 +29,7 @@ This module wraps ICU's Locale functionality.
   A wrapper around ICU's |Locale class|__.
 
   .. |Locale class| replace:: ``Locale`` class
-  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Locale.html
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Locale.html#details
 
   Represents a specific geographical, political, or cultural region.
 
@@ -103,7 +103,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
   A wrapper around ICU’s version 1 |MessageFormat class|__.
 
   .. |MessageFormat class| replace:: ``MessageFormat`` class
-  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1MessageFormat.html
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1MessageFormat.html#details
 
   Construct an instance with a message pattern and locale, then call :meth:`format` with a dictionary of values to format the message.
 
