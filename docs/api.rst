@@ -17,6 +17,80 @@ API
 
   A tuple of four integers representing the ICU version in the format ``(major, minor, patch, build)``, for example, ``(78, 2, 0, 0)``.
 
+``icu4py.locale``
+=================
+
+This module wraps ICU's Locale functionality.
+
+.. currentmodule:: icu4py.locale
+
+.. class:: Locale(language: str, country: str | None = None, variant: str | None = None, extensions: dict[str, str] | None = None)
+
+  A wrapper around ICU's |Locale class|__.
+
+  .. |Locale class| replace:: ``Locale`` class
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Locale.html
+
+  Represents a specific geographical, political, or cultural region.
+
+  :param language: A valid **ISO Language Code**: one of the lower-case two-letter codes as defined by ISO-639, like ``"en"``. Find a full list of these codes `on Wikipedia <https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes>`__.
+
+  Alternatively, this parameter may be provided as an **ICU style C locale string**, such as ``"en_GB"`` or ``"de_DE@collation=phonebook"``. In this case, the other parameters should be left as ``None``.
+
+  :param country: A valid **ISO Country Code**: one of the upper-case two-letter (A-2) codes as defined by ISO-3166, like ``GB"``. Find a full list of these codes `on Wikipedia <https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes>`__.
+
+  :param variant: A **Variant**: variant codes are vendor and browser-specific.
+
+  :param extensions: A dictionary of Unicode locale extensions, such as ``{"collation": "phonebook", "currency": "euro"}`` (optional).
+
+  Per ICU’s behaviour, the ``Locale`` constructor performs no validation of the provided locale data. Operations use a best-match approach for locales. However, if input data is completely invalid, the locale is marked as “bogus”, which can be checked with the :attr:`bogus` attribute.
+
+  Example usage:
+
+  .. code-block:: pycon
+
+     >>> from icu4py.locale import Locale
+     >>> locale = Locale("en", "GB")
+     >>> locale.bogus
+     False
+     >>> locale.language
+     'en'
+     >>> locale.country
+     'GB'
+
+  .. attribute:: bogus
+     :type: bool
+
+     Whether the locale is bogus (definitely invalid). Returns ``True`` if the locale is bogus, ``False`` if it is valid.
+
+  .. attribute:: language
+     :type: str
+
+     The locale's ISO Language Code, like ``"en"`` for English.
+
+     Note that ICU canonicalizes the language code. For instance, a ``Locale`` constructed with the three-letter code ``"eng"`` will return ``"en"``.
+
+  .. attribute:: country
+     :type: str
+
+     The locale's ISO Country Code, like ``"GB"`` for the United Kingdom.
+
+     Returns an empty string if no country code was specified.
+
+  .. attribute:: variant
+     :type: str
+
+     The locale's variant code. Variant codes are vendor and browser-specific, such as ``"POSIX"``.
+
+     Returns an empty string if no variant was specified. Note that ICU uppercases variant codes.
+
+  .. attribute:: extensions
+     :type: dict[str, str]
+
+     A dictionary of the locale's keywords and values (extensions). For example, ``{"collation": "phonebook", "currency": "USD"}``.
+
+     Returns an empty dictionary if no extensions were specified.
+
 ``icu4py.messageformat``
 ========================
 
@@ -24,7 +98,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
 
 .. currentmodule:: icu4py.messageformat
 
-.. class:: MessageFormat(pattern: str, locale: str)
+.. class:: MessageFormat(pattern: str, locale: str | Locale)
 
   A wrapper around ICU’s version 1 |MessageFormat class|__.
 
@@ -34,7 +108,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
   Construct an instance with a message pattern and locale, then call :meth:`format` with a dictionary of values to format the message.
 
   :param pattern: The message pattern string.
-  :param locale: The locale to use, as a string like ``"en_US"``.
+  :param locale: The locale to use, as either a string (an ICU style C locale) or a :class:`~icu4py.locale.Locale` object.
 
   .. method:: format(values: dict[str, Any]) -> str
 

@@ -11,6 +11,8 @@
 #include <cstring>
 #include <memory>
 
+#include "locale_types.h"
+
 namespace {
 
 using icu::MessageFormat;
@@ -19,12 +21,14 @@ using icu::Formattable;
 using icu::Locale;
 using icu::FieldPosition;
 using icu::StringPiece;
+using icu4py::LocaleObject;
 
 struct ModuleState {
     PyObject* datetime_datetime_type;
     PyObject* datetime_date_type;
     PyObject* datetime_time_type;
     PyObject* decimal_decimal_type;
+    PyObject* locale_type;
 };
 
 static inline ModuleState* get_module_state(PyObject* module) {
@@ -82,20 +86,54 @@ PyObject* MessageFormat_new(PyTypeObject* type, PyObject* args, PyObject* kwds) 
 
 int MessageFormat_init(MessageFormatObject* self, PyObject* args, PyObject* kwds) {
     const char* pattern;
-    const char* locale_str;
+    PyObject* locale_obj;
     Py_ssize_t pattern_len;
 
     static const char* kwlist[] = {"pattern", "locale", nullptr};
 
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#s",
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#O",
                                      const_cast<char**>(kwlist),
-                                     &pattern, &pattern_len, &locale_str)) {
+                                     &pattern, &pattern_len, &locale_obj)) {
         return -1;
     }
 
+#if PY_VERSION_HEX < 0x030B0000
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
+#else
+    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
+#endif
+    if (module == nullptr) {
+        return -1;
+    }
+    ModuleState* mod_state = get_module_state(module);
+
     UErrorCode status = U_ZERO_ERROR;
     UnicodeString upattern = UnicodeString::fromUTF8(StringPiece(pattern, pattern_len));
-    Locale locale(locale_str);
+    Locale locale;
+
+    if (PyUnicode_Check(locale_obj)) {
+        const char* locale_str = PyUnicode_AsUTF8(locale_obj);
+        if (locale_str == nullptr) {
+            return -1;
+        }
+        locale = Locale(locale_str);
+    } else {
+        int is_locale = PyObject_IsInstance(locale_obj, mod_state->locale_type);
+        if (is_locale == -1) {
+            return -1;
+        }
+        if (is_locale == 0) {
+            PyErr_SetString(PyExc_TypeError, "locale must be a string or Locale object");
+            return -1;
+        }
+
+        LocaleObject* locale_pyobj = reinterpret_cast<LocaleObject*>(locale_obj);
+        if (locale_pyobj->locale == nullptr) {
+            PyErr_SetString(PyExc_ValueError, "Locale object has null internal locale");
+            return -1;
+        }
+        locale = *locale_pyobj->locale;
+    }
 
     self->formatter = new MessageFormat(upattern, locale, status);
 
@@ -442,6 +480,18 @@ int icu4py_messageformat_exec(PyObject* m) {
         return -1;
     }
 
+    PyObject* locale_module = PyImport_ImportModule("icu4py.locale");
+    if (locale_module == nullptr) {
+        return -1;
+    }
+
+    state->locale_type = PyObject_GetAttrString(locale_module, "Locale");
+    Py_DECREF(locale_module);
+
+    if (state->locale_type == nullptr) {
+        return -1;
+    }
+
     return 0;
 }
 
@@ -451,6 +501,7 @@ int icu4py_messageformat_traverse(PyObject* m, visitproc visit, void* arg) {
     Py_VISIT(state->datetime_date_type);
     Py_VISIT(state->datetime_time_type);
     Py_VISIT(state->decimal_decimal_type);
+    Py_VISIT(state->locale_type);
     return 0;
 }
 
@@ -460,6 +511,7 @@ int icu4py_messageformat_clear(PyObject* m) {
     Py_CLEAR(state->datetime_date_type);
     Py_CLEAR(state->datetime_time_type);
     Py_CLEAR(state->decimal_decimal_type);
+    Py_CLEAR(state->locale_type);
     return 0;
 }
 

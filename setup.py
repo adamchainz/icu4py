@@ -35,6 +35,10 @@ ext = partial(
 setup(
     ext_modules=[
         ext(
+            "icu4py.locale",
+            sources=["src/icu4py/locale.cpp"],
+        ),
+        ext(
             "icu4py.messageformat",
             sources=["src/icu4py/messageformat.cpp"],
         ),

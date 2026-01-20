@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
+from icu4py.locale import Locale
 from icu4py.messageformat import MessageFormat
 
 
@@ -505,3 +506,15 @@ class TestMessageFormat:
         fmt = CustomMessageFormat(pattern, "en_US")
         result = fmt.format({"name": "World"})
         assert result == "HELLO, WORLD!"
+
+    def test_with_locale_object(self):
+        pattern = "Hello, {name}!"
+        locale = Locale("en", "US")
+        fmt = MessageFormat(pattern, locale)
+        assert fmt.format({"name": "World"}) == "Hello, World!"
+
+    def test_with_locale_object_different_numbers(self):
+        pattern = "{amount, number} pears"
+        locale = Locale("en", "US", extensions={"numbers": "arab"})
+        fmt = MessageFormat(pattern, locale)
+        assert fmt.format({"amount": 1234}) == "١٬٢٣٤ pears"
