@@ -4,6 +4,8 @@ Changelog
 
 * Add :data:`.icu_version` and :data:`.icu_version_info` to expose the ICU library version.
 
+* Add :class:`.Locale` class and extend :class:`.MessageFormat` to accept it.
+
 * Expand :meth:`.MessageFormat.format` to support ``decimal.Decimal``, ``date``, and ``datetime`` values.
 
 * Make :meth:`.MessageFormat.format` support large integers that would overflow ``int64``, rather than raising an error.
