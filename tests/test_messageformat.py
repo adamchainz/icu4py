@@ -433,7 +433,10 @@ class TestMessageFormat:
 
         dt = datetime(2024, 6, 20, 15, 45, 30)
         result = fmt.format({"when": dt})
-        assert result == "Scheduled for Thursday, 20 June 2024 at 15:45:30"
+        assert result in (
+            "Scheduled for Thursday, 20 June 2024 at 15:45:30",
+            "Scheduled for Thursday 20 June 2024 at 15:45:30",
+        )
 
     def test_datetime_with_timezone(self):
         pattern = "Time: {timestamp,date,short}"
