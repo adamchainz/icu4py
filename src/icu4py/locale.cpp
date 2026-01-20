@@ -1,6 +1,8 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
+#include <string>
 #include <unicode/locid.h>
+#include <unicode/strenum.h>
 #include "locale_types.h"
 
 namespace {
