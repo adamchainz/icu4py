@@ -2,6 +2,9 @@
 Changelog
 =========
 
+0.2.0 (2026-01-20)
+------------------
+
 * Add :data:`.icu_version` and :data:`.icu_version_info` to expose the ICU library version.
 
 * Add :class:`.Locale` class and extend :class:`.MessageFormat` to accept it.

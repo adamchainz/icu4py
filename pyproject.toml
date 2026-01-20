@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "icu4py"
-version = "0.1.0"
+version = "0.2.0"
 description = "Bindings to the ICU (International Components for Unicode) library (ICU4C)."
 readme = "README.rst"
 keywords = [
