@@ -88,10 +88,13 @@ enable = [
 before-all = "python download_icu.py"
 linux.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
 linux.environment.LDFLAGS = "-L/tmp/icu/icu/lib"
+linux.environment.LD_LIBRARY_PATH = "/tmp/icu/icu/lib"
 macos.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
 macos.environment.LDFLAGS = "-L/tmp/icu/icu/lib"
+macos.environment.DYLD_LIBRARY_PATH = "/tmp/icu/icu/lib"
 windows.environment.INCLUDE = "C:/icu/icu/include"
 windows.environment.LIB = "C:/icu/icu/lib"
+windows.environment.PATH = "C:/icu/icu/bin"
 
 [tool.ruff]
 lint.select = [
