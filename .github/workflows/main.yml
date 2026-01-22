@@ -146,27 +146,6 @@ jobs:
       - name: Set CIBW_ARCHS
         run: echo "CIBW_ARCHS=${{ matrix.arch }}" >> $GITHUB_ENV
 
-      - name: Install ICU4C (Windows)
-        if: matrix.os == 'windows'
-        run: |
-          # Source: https://github.com/unicode-org/icu/releases/tag/release-78.1
-
-          # Download 64-bit ICU4C
-          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-Win64-MSVC2022.zip" -OutFile "icu4c-64.zip"
-          $hash64 = Get-FileHash "icu4c-64.zip" -Algorithm SHA256
-          if ($hash64.Hash -ne "7cdb80d49dddc74371788dcbd55907ae4ac2353db38bca74f10c0560f1bb8538") {
-            throw "ICU4C 64-bit hash mismatch"
-          }
-          Expand-Archive "icu4c-64.zip" -DestinationPath "C:\icu4c-64"
-
-          # Download 32-bit ICU4C
-          Invoke-WebRequest -Uri "https://github.com/unicode-org/icu/releases/download/release-78.1/icu4c-78.1-Win32-MSVC2022.zip" -OutFile "icu4c-32.zip"
-          $hash32 = Get-FileHash "icu4c-32.zip" -Algorithm SHA256
-          if ($hash32.Hash -ne "50e272cba56c6d635823fadee2dbbe7abc72627d73883740aafc3e222c12cfd9") {
-            throw "ICU4C 32-bit hash mismatch"
-          }
-          Expand-Archive "icu4c-32.zip" -DestinationPath "C:\icu4c-32"
-
       - name: Build sdist
         if: matrix.os == 'linux' && matrix.arch == 'x86_64'
         run: uv build --sdist
