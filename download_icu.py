@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import platform
+import shutil
 import sys
 import tarfile
 import urllib.request
@@ -130,13 +131,25 @@ def download_and_extract() -> Path:
     print("Verifying checksum...")
     verify_checksum(tarball_path, expected_checksum)
 
+    icu_root = install_dir / "icu"
+    if icu_root.exists():
+        shutil.rmtree(icu_root)
+
     print(f"Extracting to {install_dir}...")
     with tarfile.open(tarball_path) as tar:
-        tar.extractall(install_dir)
+        members = tar.getmembers()
+        if not members:
+            raise ValueError("Tarball is empty")
+
+        root_name = members[0].name.split("/")[0]
+
+        for member in members:
+            if member.name.startswith(root_name + "/"):
+                member.name = "icu/" + member.name[len(root_name) + 1 :]
+                tar.extract(member, install_dir)
 
     tarball_path.unlink()
 
-    icu_root = install_dir / "icu"
     print(f"ICU extracted to: {icu_root}")
     print(f"Include directory: {icu_root / 'include'}")
     print(f"Library directory: {icu_root / 'lib'}")
