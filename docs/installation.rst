@@ -21,6 +21,4 @@ Install this package, for example with **pip**:
 Wheels are provided for Linux and macOS.
 The Windows build has unresolved errors, as tracked in `Issue #11 <https://github.com/adamchainz/icu4py/issues/11>`__.
 
-Wheels embed a recent version of ICU.
-Right now, that is at least ICU 78 on most platforms, but for older Linux distributions it is ICU 72.
-`Issue #16 <https://github.com/adamchainz/icu4py/issues/16>`__ tracks using a consistent version across all platforms.
+Wheels embed `ICU 78.2 <https://unicode-org.github.io/icu/download/78.html>`__, built from source in a separate repository, `icu4c-builds <https://github.com/adamchainz/icu4c-builds>`__.
