@@ -133,7 +133,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
     .. code-block:: pycon
 
        >>> from icu4py.messageformat import MessageFormat
-       >>> pattern = "{count, plural, one {# file} other {# files}}"
+       >>> pattern = "{count,plural,one {# file} other {# files}}"
        >>> fmt = MessageFormat(pattern, "en_GB")
        >>> fmt.format({"count": 1})
        '1 file'
@@ -146,7 +146,7 @@ This module wraps ICU’s MessageFormat V1 functionality.
 
       >>> from icu4py.messageformat import MessageFormat
       >>> pattern = (
-      ...     "{num_guests, plural, offset:1 "
+      ...     "{num_guests,plural,offset:1 "
       ...     "=0 {{host} does not throw a party.}"
       ...     "=1 {{host} invites {guest} to the party.}"
       ...     "=2 {{host} invites {guest} and one other person to the party.}"
