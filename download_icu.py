@@ -8,23 +8,55 @@ import tarfile
 import urllib.request
 from pathlib import Path
 
-ICU_VERSION = "78.2"
-RELEASE_TAG = f"v{ICU_VERSION}"
-BASE_URL = f"https://github.com/adamchainz/icu4c-builds/releases/download/{RELEASE_TAG}"
+# [[[cog
+# # Run with: uvx --from cogapp cog -r download_icu.py
+# import json
+# import subprocess
+# from functools import partial
+#
+# tag = "v78.2.post1"
+#
+# gh = partial(
+#     subprocess.run,
+#     capture_output=True,
+#     text=True,
+#     check=True,
+# )
+#
+# result = gh(["gh", "release", "view", tag, "--repo", "adamchainz/icu4c-builds", "--json", "assets"])
+# release_data = json.loads(result.stdout)
+#
+# checksums = {}
+# for asset in release_data["assets"]:
+#     name = asset["name"]
+#     sha256 = asset["digest"].removeprefix("sha256:")
+#     checksums[name] = sha256
+#
+# cog.outl(f'ICU4C_BUILDS_VERSION = "{tag.lstrip("v")}"')
+# cog.outl(f'BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/{tag}"')
+# cog.outl()
+# cog.outl("CHECKSUMS = {")
+# for name, sha in sorted(checksums.items()):
+#     cog.outl(f'    "{name}": "{sha}",')
+# cog.outl("}")
+# ]]]
+ICU4C_BUILDS_VERSION = "78.2.post1"
+BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.2.post1"
 
 CHECKSUMS = {
-    "icu-78.2-linux-aarch64.tar.gz": "a82d39ce630137380fd7b944bbb5fe0a1cfd053b6a42057bfbe7c0df16499d6d",
-    "icu-78.2-linux-i686.tar.gz": "d2acb369e8d0fc280d99072a5355fb4f9714fad6b78d8af7f5d831de9569b59f",
-    "icu-78.2-linux-musl-aarch64.tar.gz": "74041415cad18f5bbc393d8e71b8e58eb3dc7b675725047a8cd550587717732e",
-    "icu-78.2-linux-musl-i686.tar.gz": "0800feac51f7e859532f7fe474b296eb6a2a1c7b0ae1bc06fe3452727aa241c2",
-    "icu-78.2-linux-musl-x86_64.tar.gz": "be602f1ddf70cdc6bb5b6dcfea34719ea99f6898b732b2260c3750afbb597317",
-    "icu-78.2-linux-x86_64.tar.gz": "91542ea97fff4cc304028f02289070c560b88d5ab52490edf8ba5f38f6d97583",
-    "icu-78.2-macos-arm64.tar.gz": "09ef21f2b9fbf293a2b0c6f08202a685d82d54df1da5639e6a2917a208470be0",
-    "icu-78.2-macos-x86_64.tar.gz": "cef0cd0b19180b2a71d6a1153a673c194e586780132981c3dc902bbaf31ddf5f",
-    "icu-78.2-windows-AMD64.tar.gz": "089a5e481a1b722f89a41b3a801115b374ecd1c8d550ccabb431fb7d4d6720df",
-    "icu-78.2-windows-ARM64.tar.gz": "63ca5a82b83aa10b6c840b91db696f7076c8d366cf257ec831c337de13d747bf",
-    "icu-78.2-windows-x86.tar.gz": "bd98acd38e89da04c1d7bbd76c73c37cd8f6199a4c6e79ae499e5fbb693e21dc",
+    "icu-78.2-linux-aarch64.tar.gz": "22b355555b9180a35e5aea1bc44c99c2769ca055e1de49617de8715c6bc8b39e",
+    "icu-78.2-linux-i686.tar.gz": "b1f8447cd390c8120aa46fa3b1130ee9336f49004274136b6afd02c9bdb4741d",
+    "icu-78.2-linux-musl-aarch64.tar.gz": "d91836ce3b02710a6547a0bb6914ecbe467550deeb7e6ecb8e5c158621413381",
+    "icu-78.2-linux-musl-i686.tar.gz": "f3bf96cad253e68f70a792b00f158e7bda86e8edd5f1d2865dd9cac96a02e41f",
+    "icu-78.2-linux-musl-x86_64.tar.gz": "ac6175d1a01188b249225e4664e379c31c9e5e76d476a9258ad68b159cd2e39c",
+    "icu-78.2-linux-x86_64.tar.gz": "b13660d8d0705aca181e0739f258176de9908f88b7ec318cc66fcba5b03ebe21",
+    "icu-78.2-macos-arm64.tar.gz": "2982c4fd0c36649ffe430b55889621101fb848d623f195771f28eb16a2be99e1",
+    "icu-78.2-macos-x86_64.tar.gz": "67247ae7d5ca0c57bbbfc020a839d7aea92281690c57a223443d2ba05ee7370a",
+    "icu-78.2-windows-AMD64.tar.gz": "65ed1428f5e69b74d4882e51fa3048e7057186d28c688fa03d77c673d3c00a40",
+    "icu-78.2-windows-ARM64.tar.gz": "37f62ae11d94deb187a7656a6f9fe91bd9e69561ea2d82856f551f822c40340b",
+    "icu-78.2-windows-x86.tar.gz": "834f680bb7982c1add9629f65a2eaf23a2a882736ecc5676d2fe62aa91a5f03d",
 }
+# [[[end]]]
 
 
 def get_platform_info() -> tuple[str, str, str]:
@@ -83,13 +115,13 @@ def get_platform_info() -> tuple[str, str, str]:
 def get_filename(os_name: str, libc: str, arch: str) -> str:
     if os_name == "linux":
         if libc == "musl":
-            return f"icu-{ICU_VERSION}-linux-musl-{arch}.tar.gz"
+            return f"icu-{ICU4C_BUILDS_VERSION}-linux-musl-{arch}.tar.gz"
         else:
-            return f"icu-{ICU_VERSION}-linux-{arch}.tar.gz"
+            return f"icu-{ICU4C_BUILDS_VERSION}-linux-{arch}.tar.gz"
     elif os_name == "macos":
-        return f"icu-{ICU_VERSION}-macos-{arch}.tar.gz"
+        return f"icu-{ICU4C_BUILDS_VERSION}-macos-{arch}.tar.gz"
     elif os_name == "windows":
-        return f"icu-{ICU_VERSION}-windows-{arch}.tar.gz"
+        return f"icu-{ICU4C_BUILDS_VERSION}-windows-{arch}.tar.gz"
     else:
         raise ValueError(f"Unknown OS: {os_name}")
 
