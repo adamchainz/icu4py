@@ -15,6 +15,8 @@ from pathlib import Path
 # from functools import partial
 #
 # tag = "v78.2.post1"
+# icu_version = tag.lstrip("v").split(".post")[0]
+#
 #
 # gh = partial(
 #     subprocess.run,
@@ -32,7 +34,7 @@ from pathlib import Path
 #     sha256 = asset["digest"].removeprefix("sha256:")
 #     checksums[name] = sha256
 #
-# cog.outl(f'ICU4C_BUILDS_VERSION = "{tag.lstrip("v")}"')
+# cog.outl(f'ICU_VERSION = "{icu_version}"')
 # cog.outl(f'BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/{tag}"')
 # cog.outl()
 # cog.outl("CHECKSUMS = {")
@@ -40,7 +42,7 @@ from pathlib import Path
 #     cog.outl(f'    "{name}": "{sha}",')
 # cog.outl("}")
 # ]]]
-ICU4C_BUILDS_VERSION = "78.2.post1"
+ICU_VERSION = "78.2"
 BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.2.post1"
 
 CHECKSUMS = {
@@ -115,13 +117,13 @@ def get_platform_info() -> tuple[str, str, str]:
 def get_filename(os_name: str, libc: str, arch: str) -> str:
     if os_name == "linux":
         if libc == "musl":
-            return f"icu-{ICU4C_BUILDS_VERSION}-linux-musl-{arch}.tar.gz"
+            return f"icu-{ICU_VERSION}-linux-musl-{arch}.tar.gz"
         else:
-            return f"icu-{ICU4C_BUILDS_VERSION}-linux-{arch}.tar.gz"
+            return f"icu-{ICU_VERSION}-linux-{arch}.tar.gz"
     elif os_name == "macos":
-        return f"icu-{ICU4C_BUILDS_VERSION}-macos-{arch}.tar.gz"
+        return f"icu-{ICU_VERSION}-macos-{arch}.tar.gz"
     elif os_name == "windows":
-        return f"icu-{ICU4C_BUILDS_VERSION}-windows-{arch}.tar.gz"
+        return f"icu-{ICU_VERSION}-windows-{arch}.tar.gz"
     else:
         raise ValueError(f"Unknown OS: {os_name}")
 
