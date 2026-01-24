@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Embed ICU version 78.2 consistently in wheels across all platforms, via the custom ICU4C build repository, `icu4c-builds <https://github.com/adamchainz/icu4c-builds>`__.
+
+  `PR #45 <https://github.com/adamchainz/icu4py/pull/45>`__.
+
 0.2.0 (2026-01-20)
 ------------------
 

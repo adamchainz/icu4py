@@ -17,13 +17,6 @@ else:
 
 extra_link_args: list[str] = []
 
-# On macOS, add rpath to find versionless Homebrew install location
-if sys.platform == "darwin":
-    extra_link_args = [
-        "-Wl,-rpath,/opt/homebrew/opt/icu4c/lib",
-        "-Wl,-rpath,/usr/local/opt/icu4c/lib",
-    ]
-
 ext = partial(
     Extension,
     libraries=libraries,
