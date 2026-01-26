@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import hashlib
-import os
 import platform
 import shutil
 import sys
@@ -185,21 +184,6 @@ def download_and_extract() -> Path:
     print(f"ICU extracted to: {icu_root}")
     print(f"Include directory: {icu_root / 'include'}")
     print(f"Library directory: {icu_root / 'lib'}")
-
-    if os_name == "windows":
-        lib_dir = icu_root / "lib"
-        bin_dir = icu_root / "bin"
-        print(f"[icu4py] Windows ICU lib dir: {lib_dir}")
-        print(f"[icu4py] Windows ICU bin dir: {bin_dir}")
-
-        lib_contents = sorted(p.name for p in lib_dir.glob("*"))
-        bin_contents = sorted(p.name for p in bin_dir.glob("icu*.dll"))
-        print(f"[icu4py] Windows ICU lib contents: {lib_contents}")
-        print(f"[icu4py] Windows ICU ICU DLLs: {bin_contents}")
-
-        print("[icu4py] Environment on import:")
-        for key in ("INCLUDE", "LIB", "PATH"):
-            print(f"  {key}={os.environ.get(key, '')}")
 
     return icu_root
 
