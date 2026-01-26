@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import os
 import sys
 from functools import partial
+from pathlib import Path
 
 from setuptools import Extension, setup
 
@@ -14,14 +16,21 @@ libraries = [
 
 if sys.platform == "win32":
     extra_compile_args = ["/Zc:wchar_t", "/EHsc", "/std:c++17"]
+    icu_root = Path(os.environ.get("ICU_ROOT", "C:/icu/icu"))
+    include_dirs = [str(icu_root / "include")]
+    library_dirs = [str(icu_root / "lib")]
 else:
     extra_compile_args = ["-std=c++17"]
+    include_dirs: list[str] = []
+    library_dirs: list[str] = []
 
 extra_link_args: list[str] = []
 
 ext = partial(
     Extension,
     libraries=libraries,
+    include_dirs=include_dirs,
+    library_dirs=library_dirs,
     extra_compile_args=extra_compile_args,
     extra_link_args=extra_link_args,
     language="c++",
