@@ -14,7 +14,7 @@ from pathlib import Path
 # import subprocess
 # from functools import partial
 #
-# tag = "v78.2.post2"
+# tag = "v78.2.post3"
 # icu_version = tag.lstrip("v").split(".post")[0]
 #
 #
@@ -43,20 +43,17 @@ from pathlib import Path
 # cog.outl("}")
 # ]]]
 ICU_VERSION = "78.2"
-BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.2.post2"
+BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.2.post3"
 
 CHECKSUMS = {
-    "icu-78.2-linux-aarch64.tar.gz": "5c166b6b8696f5e056aaba30ae5ce55b79dc93e102aaa6aa781a15b6c8ecad64",
-    "icu-78.2-linux-i686.tar.gz": "aef6d5d9c20b09a7b8ce3ac1abd355f1bdc182013d5a1aaf0298c990324434e3",
-    "icu-78.2-linux-musl-aarch64.tar.gz": "abd2bff2feafa56186070333e1426d36bfcb507c76f2cc1e07d933bc11504344",
-    "icu-78.2-linux-musl-i686.tar.gz": "0b7bafcf2d9d72e22a8396b39c1213da077ccc55d5edaa0b0efa204033ee8d98",
-    "icu-78.2-linux-musl-x86_64.tar.gz": "4469eaf4d41b1ff160e8f844e6b0e17c7b362230c6a5f765bdff2ca3a456b7ca",
-    "icu-78.2-linux-x86_64.tar.gz": "617503c6e8f9aa19d079187feb78a86be09d901b2f90b36a7ff1d2098a9f8287",
-    "icu-78.2-macos-arm64.tar.gz": "16f97976388e79f50845e404e3a9b5cc4f48f386e54aa96f4a90620d4c69ff09",
-    "icu-78.2-macos-x86_64.tar.gz": "cf4a1f05d7d9642aa9f6643cb79b8474cb8c9becbfc3c87d35bdbdf7c281f8f2",
-    "icu-78.2-windows-AMD64.tar.gz": "bad9974e21e1b4f22e59fcb58f1766ccce5676c13896b007be99e097e54a60ec",
-    "icu-78.2-windows-ARM64.tar.gz": "df7359d39eaa71bee355634486fb1f7a781f7acfc453f3145f0258c5800708d8",
-    "icu-78.2-windows-x86.tar.gz": "c9aae81ebb8093e18c0c27bcec34be980c63fd8544fc5b2b999067b4541a2c41",
+    "icu-78.2-linux-aarch64.tar.gz": "7b816f7f85abe4f2d96f46a5d2c0c015c1cde684cdfc18e44b4bc2c93e25b901",
+    "icu-78.2-linux-musl-aarch64.tar.gz": "14b56bf56d8cc91ca51c6fbd381c622b1456994b7a4a47c249b27a3f5b283679",
+    "icu-78.2-linux-musl-x86_64.tar.gz": "a2d07b34741970eb187a441717ca971b9bf696c5b33c3807c5c87156487fbf8f",
+    "icu-78.2-linux-x86_64.tar.gz": "9590a5507827400f28a8f9e1b9a685afd517ec7a93bbbdcfe31b22fa7f743a99",
+    "icu-78.2-macos-aarch64.tar.gz": "f5791bee4902262e4d0e59eded834a442a1cef60ee0c2cb4489f5e8d5abc4497",
+    "icu-78.2-macos-x86_64.tar.gz": "9fd54d7b28e49cc9896ce1dfb5dbffcfcf38f184fb98b9fee3c0e8ac72538543",
+    "icu-78.2-windows-AMD64.tar.gz": "234e624a5f3e169d81738f53ddd735f6c2f0ade0588cd368d04e785387c6ccf2",
+    "icu-78.2-windows-ARM64.tar.gz": "1569aaf2b3e6e86ac338db53650f6d95bd1b0ca154ad65f7903cc3c2f544ab8c",
 }
 # [[[end]]]
 
@@ -92,7 +89,7 @@ def get_platform_info() -> tuple[str, str, str]:
         if machine in ("x86_64", "amd64"):
             arch = "x86_64"
         elif machine in ("arm64", "aarch64"):
-            arch = "arm64"
+            arch = "aarch64"
         else:
             raise ValueError(f"Unsupported macOS architecture: {machine}")
 
