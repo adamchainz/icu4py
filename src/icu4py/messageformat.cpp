@@ -416,6 +416,21 @@ PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
     return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
 }
 
+PyObject* MessageFormat_repr(MessageFormatObject* self) {
+    UnicodeString pattern_ustr;
+    self->formatter->toPattern(pattern_ustr);
+    std::string pattern_utf8;
+    pattern_ustr.toUTF8String(pattern_utf8);
+
+    const Locale& locale = self->formatter->getLocale();
+    const char* locale_name = locale.getName();
+
+    return PyUnicode_FromFormat("MessageFormat('%s', '%s')",
+                                 pattern_utf8.c_str(), locale_name);
+}
+
+
+
 PyMethodDef MessageFormat_methods[] = {
     {"format", reinterpret_cast<PyCFunction>(MessageFormat_format), METH_VARARGS,
      "Format the message with given parameters"},
@@ -427,6 +442,7 @@ PyType_Slot MessageFormat_slots[] = {
     {Py_tp_dealloc, reinterpret_cast<void*>(MessageFormat_dealloc)},
     {Py_tp_init, reinterpret_cast<void*>(MessageFormat_init)},
     {Py_tp_new, reinterpret_cast<void*>(MessageFormat_new)},
+    {Py_tp_repr, reinterpret_cast<void*>(MessageFormat_repr)},
     {Py_tp_methods, MessageFormat_methods},
     {0, nullptr}
 };
