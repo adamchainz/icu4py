@@ -10,6 +10,10 @@ Changelog
 
   `PR #47 <https://github.com/adamchainz/icu4py/pull/47>`__.
 
+* Ship wheels for Windows.
+
+  `PR #9 <https://github.com/adamchainz/icu4py/pull/9>`__.
+
 0.2.0 (2026-01-20)
 ------------------
 
