@@ -521,3 +521,27 @@ class TestMessageFormat:
         locale = Locale("en", "GB", extensions={"numbers": "arab"})
         fmt = MessageFormat(pattern, locale)
         assert fmt.format({"amount": 1234}) == "١٬٢٣٤ pears"
+
+    def test_repr_simple(self):
+        pattern = "Hello, {name}!"
+        fmt = MessageFormat(pattern, "en_US")
+        assert repr(fmt) == "MessageFormat('Hello, {name}!', 'en_US')"
+
+    def test_repr_with_locale_object(self):
+        pattern = "Hello, {name}!"
+        locale = Locale("en", "GB")
+        fmt = MessageFormat(pattern, locale)
+        assert repr(fmt) == "MessageFormat('Hello, {name}!', 'en_GB')"
+
+    def test_repr_complex_pattern(self):
+        pattern = "{count,plural,one {# item} other {# items}}"
+        fmt = MessageFormat(pattern, "en")
+        assert (
+            repr(fmt)
+            == "MessageFormat('{count,plural,one {# item} other {# items}}', 'en')"
+        )
+
+    def test_repr_with_special_characters(self):
+        pattern = "Price: {price,number,currency}"
+        fmt = MessageFormat(pattern, "de_DE")
+        assert repr(fmt) == "MessageFormat('Price: {price,number,currency}', 'de_DE')"

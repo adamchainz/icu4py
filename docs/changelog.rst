@@ -14,6 +14,10 @@ Changelog
 
   `PR #9 <https://github.com/adamchainz/icu4py/pull/9>`__.
 
+* Add ``repr()`` implementations to :class:`.Locale` and :class:`.MessageFormat`.
+
+  `PR #49 <https://github.com/adamchainz/icu4py/pull/49>`__.
+
 0.2.0 (2026-01-20)
 ------------------
 

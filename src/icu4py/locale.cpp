@@ -191,6 +191,11 @@ PyObject* Locale_get_extensions(LocaleObject* self, void* closure) {
     return dict;
 }
 
+PyObject* Locale_repr(LocaleObject* self) {
+    const char* name = self->locale->getName();
+    return PyUnicode_FromFormat("Locale('%s')", name);
+}
+
 PyGetSetDef Locale_getsetters[] = {
     {const_cast<char*>("bogus"), reinterpret_cast<getter>(Locale_get_bogus), nullptr,
      const_cast<char*>("Whether the locale is bogus"), nullptr},
@@ -210,6 +215,7 @@ PyType_Slot Locale_slots[] = {
     {Py_tp_dealloc, reinterpret_cast<void*>(Locale_dealloc)},
     {Py_tp_init, reinterpret_cast<void*>(Locale_init)},
     {Py_tp_new, reinterpret_cast<void*>(Locale_new)},
+    {Py_tp_repr, reinterpret_cast<void*>(Locale_repr)},
     {Py_tp_getset, Locale_getsetters},
     {0, nullptr}
 };

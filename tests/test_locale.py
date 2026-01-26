@@ -137,3 +137,28 @@ class TestLocale:
 
         with pytest.raises(AssertionError):
             CustomLocale("de_DE")
+
+    def test_repr_simple(self):
+        locale = Locale("en")
+        assert repr(locale) == "Locale('en')"
+
+    def test_repr_with_country(self):
+        locale = Locale("en", "GB")
+        assert repr(locale) == "Locale('en_GB')"
+
+    def test_repr_with_variant(self):
+        locale = Locale("en", "GB", "POSIX")
+        assert repr(locale) == "Locale('en_GB_POSIX')"
+
+    def test_repr_with_extensions(self):
+        locale = Locale("de", "DE", extensions={"collation": "phonebook"})
+        assert repr(locale) == "Locale('de_DE@collation=phonebook')"
+
+    def test_repr_with_multiple_extensions(self):
+        locale = Locale(
+            "en", "GB", extensions={"collation": "phonebook", "currency": "USD"}
+        )
+        repr_str = repr(locale)
+        assert repr_str.startswith("Locale('en_GB@")
+        assert "collation=phonebook" in repr_str
+        assert "currency=USD" in repr_str
