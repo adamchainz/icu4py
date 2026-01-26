@@ -6,6 +6,10 @@ Changelog
 
   `PR #45 <https://github.com/adamchainz/icu4py/pull/45>`__.
 
+* Stop shipping wheels for 32-bit platforms.
+
+  `PR #47 <https://github.com/adamchainz/icu4py/pull/47>`__.
+
 0.2.0 (2026-01-20)
 ------------------
 
