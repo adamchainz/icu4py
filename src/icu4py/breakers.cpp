@@ -33,6 +33,8 @@ int icu4py_breakers_exec(PyObject* m);
 int icu4py_breakers_traverse(PyObject* m, visitproc visit, void* arg);
 int icu4py_breakers_clear(PyObject* m);
 
+extern PyModuleDef breakersmodule;
+
 struct BreakerObject {
     PyObject_HEAD
     BreakIterator* breaker;
@@ -81,7 +83,7 @@ int Breaker_init_impl(BreakerObject* self, PyObject* args, PyObject* kwds,
     }
 
 #if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), nullptr);
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #else
     PyObject* module = PyType_GetModule(Py_TYPE(self));
 #endif
@@ -233,7 +235,7 @@ PyType_Spec StringIterator_spec = {
 
 PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
 #if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), nullptr);
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #else
     PyObject* module = PyType_GetModule(Py_TYPE(self));
 #endif
@@ -269,7 +271,7 @@ PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
 
 PyObject* BaseBreaker_iter(BreakerObject* self) {
 #if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), nullptr);
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #else
     PyObject* module = PyType_GetModule(Py_TYPE(self));
 #endif
@@ -326,7 +328,7 @@ int BaseBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
     PyTypeObject* base_type = nullptr;
 
 #if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(type, nullptr);
+    PyObject* module = _PyType_GetModuleByDef(type, &breakersmodule);
 #else
     PyObject* module = PyType_GetModule(type);
 #endif
@@ -453,7 +455,7 @@ PyModuleDef_Slot breakers_slots[] = {
     {0, nullptr}
 };
 
-static PyModuleDef breakersmodule = {
+PyModuleDef breakersmodule = {
     PyModuleDef_HEAD_INIT,
     "icu4py.breakers",
     "",
