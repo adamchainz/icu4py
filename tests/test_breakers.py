@@ -12,6 +12,12 @@ from icu4py.breakers import (
 from icu4py.locale import Locale
 
 
+class TestBaseBreaker:
+    def test_cannot_init_directly(self):
+        with pytest.raises(TypeError, match="Cannot instantiate BaseBreaker directly"):
+            BaseBreaker("hello", "en")
+
+
 class TestWordBreaker:
     def test_simple_words(self):
         breaker = WordBreaker("Hello World", "en_GB")
@@ -231,18 +237,6 @@ class TestSentenceBreaker:
         breaker = SentenceBreaker("Hello. World.", locale)
         sentences = list(breaker)
         assert sentences == ["Hello. ", "World."]
-
-
-class TestBaseBreaker:
-    def test_can_instantiate_but_no_factory(self):
-        breaker = BaseBreaker.__new__(BaseBreaker)
-        assert isinstance(breaker, BaseBreaker)
-
-    def test_inheritance(self):
-        assert issubclass(WordBreaker, BaseBreaker)
-        assert issubclass(LineBreaker, BaseBreaker)
-        assert issubclass(CharacterBreaker, BaseBreaker)
-        assert issubclass(SentenceBreaker, BaseBreaker)
 
 
 class TestLocaleHandling:

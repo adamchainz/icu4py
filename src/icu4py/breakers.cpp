@@ -317,10 +317,53 @@ PyMethodDef Breaker_methods[] = {
     {nullptr, nullptr, 0, nullptr}
 };
 
+int BaseBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
+    const char* text;
+    Py_ssize_t text_len;
+    PyObject* locale_obj;
+
+    static const char* kwlist[] = {"text", "locale", nullptr};
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "s#O",
+                                     const_cast<char**>(kwlist),
+                                     &text, &text_len, &locale_obj)) {
+        return -1;
+    }
+
+    PyTypeObject* type = Py_TYPE(self);
+    PyTypeObject* base_type = nullptr;
+
+#if PY_VERSION_HEX < 0x030B0000
+    PyObject* module = _PyType_GetModuleByDef(type, nullptr);
+#else
+    PyObject* module = PyType_GetModule(type);
+#endif
+    if (module == nullptr) {
+        return -1;
+    }
+
+    base_type = reinterpret_cast<PyTypeObject*>(PyObject_GetAttrString(module, "BaseBreaker"));
+    if (base_type == nullptr) {
+        return -1;
+    }
+
+    int is_base = (type == base_type);
+    Py_DECREF(base_type);
+
+    if (is_base) {
+        PyErr_SetString(PyExc_TypeError, "Cannot instantiate BaseBreaker directly");
+        return -1;
+    }
+
+    PyErr_SetString(PyExc_TypeError, "Subclass must implement __init__");
+    return -1;
+}
+
 PyType_Slot BaseBreaker_slots[] = {
     {Py_tp_doc, const_cast<char*>("Base break iterator")},
     {Py_tp_dealloc, reinterpret_cast<void*>(Breaker_dealloc)},
     {Py_tp_new, reinterpret_cast<void*>(Breaker_new)},
+    {Py_tp_init, reinterpret_cast<void*>(BaseBreaker_init)},
     {Py_tp_iter, reinterpret_cast<void*>(Breaker_iter)},
     {Py_tp_methods, Breaker_methods},
     {0, nullptr}
