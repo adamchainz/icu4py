@@ -20,6 +20,8 @@ using icu4py::LocaleObject;
 
 struct ModuleState {
     PyObject* locale_type;
+    PyObject* segment_iterator_type;
+    PyObject* string_iterator_type;
 };
 
 static inline ModuleState* get_module_state(PyObject* module) {
@@ -240,14 +242,9 @@ PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
     }
 
     ModuleState* state = get_module_state(module);
-    PyObject* segment_iter_type = PyObject_GetAttrString(module, "_SegmentIterator");
-    if (segment_iter_type == nullptr) {
-        return nullptr;
-    }
 
     auto* iter = reinterpret_cast<SegmentIteratorObject*>(
-        PyObject_CallNoArgs(segment_iter_type));
-    Py_DECREF(segment_iter_type);
+        PyObject_CallNoArgs(state->segment_iterator_type));
 
     if (iter == nullptr) {
         return nullptr;
@@ -281,14 +278,9 @@ PyObject* Breaker_iter(BreakerObject* self) {
     }
 
     ModuleState* state = get_module_state(module);
-    PyObject* string_iter_type = PyObject_GetAttrString(module, "_StringIterator");
-    if (string_iter_type == nullptr) {
-        return nullptr;
-    }
 
     auto* iter = reinterpret_cast<StringIteratorObject*>(
-        PyObject_CallNoArgs(string_iter_type));
-    Py_DECREF(string_iter_type);
+        PyObject_CallNoArgs(state->string_iterator_type));
 
     if (iter == nullptr) {
         return nullptr;
@@ -563,6 +555,12 @@ int icu4py_breakers_exec(PyObject* m) {
 
     ModuleState* state = get_module_state(m);
 
+    state->segment_iterator_type = segment_iter_type;
+    Py_INCREF(state->segment_iterator_type);
+
+    state->string_iterator_type = string_iter_type;
+    Py_INCREF(state->string_iterator_type);
+
     PyObject* locale_module = PyImport_ImportModule("icu4py.locale");
     if (locale_module == nullptr) {
         return -1;
@@ -581,12 +579,16 @@ int icu4py_breakers_exec(PyObject* m) {
 int icu4py_breakers_traverse(PyObject* m, visitproc visit, void* arg) {
     ModuleState* state = get_module_state(m);
     Py_VISIT(state->locale_type);
+    Py_VISIT(state->segment_iterator_type);
+    Py_VISIT(state->string_iterator_type);
     return 0;
 }
 
 int icu4py_breakers_clear(PyObject* m) {
     ModuleState* state = get_module_state(m);
     Py_CLEAR(state->locale_type);
+    Py_CLEAR(state->segment_iterator_type);
+    Py_CLEAR(state->string_iterator_type);
     return 0;
 }
 
