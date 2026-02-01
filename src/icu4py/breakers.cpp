@@ -51,13 +51,13 @@ struct StringIteratorObject {
     int32_t current_pos;
 };
 
-void Breaker_dealloc(BreakerObject* self) {
+void BaseBreaker_dealloc(BreakerObject* self) {
     delete self->breaker;
     self->text.~UnicodeString();
     Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
-PyObject* Breaker_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+PyObject* BaseBreaker_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
     auto* self = reinterpret_cast<BreakerObject*>(type->tp_alloc(type, 0));
     if (self != nullptr) {
         self->breaker = nullptr;
@@ -267,7 +267,7 @@ PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
     return reinterpret_cast<PyObject*>(iter);
 }
 
-PyObject* Breaker_iter(BreakerObject* self) {
+PyObject* BaseBreaker_iter(BreakerObject* self) {
 #if PY_VERSION_HEX < 0x030B0000
     PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), nullptr);
 #else
@@ -353,10 +353,10 @@ int BaseBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
 
 PyType_Slot BaseBreaker_slots[] = {
     {Py_tp_doc, const_cast<char*>("Base break iterator")},
-    {Py_tp_dealloc, reinterpret_cast<void*>(Breaker_dealloc)},
-    {Py_tp_new, reinterpret_cast<void*>(Breaker_new)},
+    {Py_tp_dealloc, reinterpret_cast<void*>(BaseBreaker_dealloc)},
+    {Py_tp_new, reinterpret_cast<void*>(BaseBreaker_new)},
     {Py_tp_init, reinterpret_cast<void*>(BaseBreaker_init)},
-    {Py_tp_iter, reinterpret_cast<void*>(Breaker_iter)},
+    {Py_tp_iter, reinterpret_cast<void*>(BaseBreaker_iter)},
     {Py_tp_methods, Breaker_methods},
     {0, nullptr}
 };
