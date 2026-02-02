@@ -177,16 +177,19 @@ __ https://unicode-org.github.io/icu/userguide/format_parse/messages/
 ``icu4py.breakers``
 ===================
 
-This module wraps ICU's |BreakIterator class|__ for finding boundaries in text.
+This module wraps ICU's `boundary analysis`__ functionality, providing classes for finding text boundaries around characters, words, lines, and sentences.
 
-.. |BreakIterator class| replace:: ``BreakIterator`` class
-__ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#details
+__ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
 .. currentmodule:: icu4py.breakers
 
 .. class:: BaseBreaker(text: str, locale: str | Locale)
 
-  Base class for breaker subclasses, which cannot be instantiated directly.
+  Base class for the following breaker subclasses, which cannot be instantiated directly.
+  Wraps ICU’s |BreakIterator class|__.
+
+  .. |BreakIterator class| replace:: ``BreakIterator`` class
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#details
 
   :param text: The text to analyze for boundaries.
   :param locale: The locale to use, as either a string (an ICU style C locale) or a :class:`~icu4py.locale.Locale` object.
@@ -223,11 +226,10 @@ __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Brea
 
 .. class:: CharacterBreaker(text: str, locale: str | Locale)
 
-  A wrapper around ICU's `character-break iterator`__.
+  :class:`BaseBreaker` subclass for iterating over character (grapheme cluster) boundaries, handling combining characters and emoji sequences.
+  Wraps ICU's `character-break iterator`__.
 
   __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#afffc1125b180a61857f698e147b1a668
-
-  Finds character (grapheme cluster) boundaries, handling combining characters and emoji sequences as single units.
 
   Example usage:
 
@@ -243,11 +245,10 @@ __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Brea
 
 .. class:: WordBreaker(text: str, locale: str | Locale)
 
-  A wrapper around ICU's `word boundary iterator`__.
+  :class:`BaseBreaker` subclass for iterating over word boundaries, correctly handling punctuation, hyphenated words, and contractions.
+  Wraps ICU's `word boundary iterator`__.
 
   __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#a6aa1459cc086397bdb85ccd1bb3c5500
-
-  Finds word boundaries in text, correctly handling punctuation, hyphenated words, and contractions.
 
   Example usage:
 
@@ -260,11 +261,10 @@ __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Brea
 
 .. class:: LineBreaker(text: str, locale: str | Locale)
 
-  A wrapper around ICU's `line-break iterator`__.
+  :class:`BaseBreaker` subclass for iterating over line-break boundaries, which are incicate where text could be wrapped to the next line, correctly handling punctuation and hyphenated words.
+  Wraps ICU's `line-break iterator`__.
 
   __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#aae588706df064825f1bccb2a9165169e
-
-  Finds potential line-break positions in text, where text can be wrapped to the next line, correctly handling punctuation and hyphenated words.
 
   Example usage:
 
@@ -277,11 +277,10 @@ __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Brea
 
 .. class:: SentenceBreaker(text: str, locale: str | Locale)
 
-  A wrapper around ICU's `sentence-break iterator`__.
+  :class:`BaseBreaker` subclass for iterating over sentence boundaries, handling periods within numbers, abbreviations, and trailing punctuation marks.
+  Wraps ICU's `sentence-break iterator`__.
 
   __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#ae161880c561882dad879112e15fde42b
-
-  Finds sentence boundaries, correctly interpreting periods within numbers and abbreviations and any trailing punctuation marks.
 
   Example usage:
 
