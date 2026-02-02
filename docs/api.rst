@@ -20,7 +20,9 @@ API
 ``icu4py.locale``
 =================
 
-This module wraps ICU's Locale functionality.
+This module wraps ICU's `locale functionality`__.
+
+__ https://unicode-org.github.io/icu/userguide/locale/
 
 .. currentmodule:: icu4py.locale
 
@@ -94,7 +96,9 @@ This module wraps ICU's Locale functionality.
 ``icu4py.messageformat``
 ========================
 
-This module wraps ICU’s MessageFormat V1 functionality.
+This module wraps ICU’s `MessageFormat V1 functionality`__.
+
+__ https://unicode-org.github.io/icu/userguide/format_parse/messages/
 
 .. currentmodule:: icu4py.messageformat
 
