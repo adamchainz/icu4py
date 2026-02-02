@@ -2,7 +2,7 @@
 Changelog
 =========
 
-* Add :mod:`.breakers` module with :class:`.WordBreaker`, :class:`.LineBreaker`, :class:`.CharacterBreaker`, and :class:`.SentenceBreaker` classes for finding text boundaries.
+* Add :mod:`.breakers` module with :class:`.CharacterBreaker`, :class:`.WordBreaker`, :class:`.LineBreaker`, and :class:`.SentenceBreaker` classes for finding text boundaries.
 
 * Embed ICU version 78.2 consistently in wheels across all platforms, via the custom ICU4C build repository, `icu4c-builds <https://github.com/adamchainz/icu4c-builds>`__.
 

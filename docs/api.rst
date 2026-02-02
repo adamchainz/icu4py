@@ -221,6 +221,26 @@ __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Brea
        >>> list(breaker.segments())
        [(0, 5), (5, 6), (6, 11)]
 
+.. class:: CharacterBreaker(text: str, locale: str | Locale)
+
+  A wrapper around ICU's `character-break iterator`__.
+
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#afffc1125b180a61857f698e147b1a668
+
+  Finds character (grapheme cluster) boundaries, handling combining characters and emoji sequences as single units.
+
+  Example usage:
+
+  .. code-block:: pycon
+
+     >>> from icu4py.breakers import CharacterBreaker
+     >>> greeting = "👋🏽 hi"
+     >>> list(greeting)  # splits by codepoints, emoji and skin tone are separate
+     ['👋', '🏽', ' ', 'h', 'i']
+     >>> breaker = CharacterBreaker(greeting, "en_GB")
+     >>> list(breaker)  # splits by grapheme clusters, keeping emoji and skin tone together
+     ['👋🏽', ' ', 'h', 'i']
+
 .. class:: WordBreaker(text: str, locale: str | Locale)
 
   A wrapper around ICU's `word boundary iterator`__.
@@ -254,26 +274,6 @@ __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1Brea
      >>> review = "It’s quite thirst-quenching."
      >>> list(LineBreaker(review, "en_GB"))
      ['It’s ', 'quite ', 'thirst-', 'quenching.']
-
-.. class:: CharacterBreaker(text: str, locale: str | Locale)
-
-  A wrapper around ICU's `character-break iterator`__.
-
-  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#afffc1125b180a61857f698e147b1a668
-
-  Finds character (grapheme cluster) boundaries, handling combining characters and emoji sequences as single units.
-
-  Example usage:
-
-  .. code-block:: pycon
-
-     >>> from icu4py.breakers import CharacterBreaker
-     >>> greeting = "👋🏽 hi"
-     >>> list(greeting)  # splits by codepoints, emoji and skin tone are separate
-     ['👋', '🏽', ' ', 'h', 'i']
-     >>> breaker = CharacterBreaker(greeting, "en_GB")
-     >>> list(breaker)  # splits by grapheme clusters, keeping emoji and skin tone together
-     ['👋🏽', ' ', 'h', 'i']
 
 .. class:: SentenceBreaker(text: str, locale: str | Locale)
 

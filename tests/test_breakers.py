@@ -18,6 +18,52 @@ class TestBaseBreaker:
             BaseBreaker("hello", "en")
 
 
+class TestCharacterBreaker:
+    def test_simple_characters(self):
+        breaker = CharacterBreaker("Hello", "en_GB")
+        chars = list(breaker)
+        assert chars == ["H", "e", "l", "l", "o"]
+
+    def test_segments(self):
+        breaker = CharacterBreaker("Hello", "en_GB")
+        segments = list(breaker.segments())
+        assert segments == [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
+
+    def test_combining_characters(self):
+        text = "é"
+        breaker = CharacterBreaker(text, "en_GB")
+        chars = list(breaker)
+        assert chars == ["é"]
+
+    def test_emoji_sequences(self):
+        text = "👨‍👩‍👧‍👦"
+        breaker = CharacterBreaker(text, "en_GB")
+        chars = list(breaker)
+        assert chars == ["👨‍👩‍👧‍👦"]
+
+    def test_emoji_with_skin_tone(self):
+        text = "👋🏽"
+        breaker = CharacterBreaker(text, "en_GB")
+        chars = list(breaker)
+        assert chars == ["👋🏽"]
+
+    def test_empty_string(self):
+        breaker = CharacterBreaker("", "en_GB")
+        chars = list(breaker)
+        assert chars == []
+
+    def test_unicode_text(self):
+        breaker = CharacterBreaker("Café", "en_GB")
+        chars = list(breaker)
+        assert chars == ["C", "a", "f", "é"]
+
+    def test_with_locale_object(self):
+        locale = Locale("en", "GB")
+        breaker = CharacterBreaker("Hello", locale)
+        chars = list(breaker)
+        assert chars == ["H", "e", "l", "l", "o"]
+
+
 class TestWordBreaker:
     def test_simple_words(self):
         breaker = WordBreaker("Hello World", "en_GB")
@@ -131,52 +177,6 @@ class TestLineBreaker:
         breaker = LineBreaker("Hello World", locale)
         segments = list(breaker.segments())
         assert segments == [(0, 6), (6, 11)]
-
-
-class TestCharacterBreaker:
-    def test_simple_characters(self):
-        breaker = CharacterBreaker("Hello", "en_GB")
-        chars = list(breaker)
-        assert chars == ["H", "e", "l", "l", "o"]
-
-    def test_segments(self):
-        breaker = CharacterBreaker("Hello", "en_GB")
-        segments = list(breaker.segments())
-        assert segments == [(0, 1), (1, 2), (2, 3), (3, 4), (4, 5)]
-
-    def test_combining_characters(self):
-        text = "é"
-        breaker = CharacterBreaker(text, "en_GB")
-        chars = list(breaker)
-        assert chars == ["é"]
-
-    def test_emoji_sequences(self):
-        text = "👨‍👩‍👧‍👦"
-        breaker = CharacterBreaker(text, "en_GB")
-        chars = list(breaker)
-        assert chars == ["👨‍👩‍👧‍👦"]
-
-    def test_emoji_with_skin_tone(self):
-        text = "👋🏽"
-        breaker = CharacterBreaker(text, "en_GB")
-        chars = list(breaker)
-        assert chars == ["👋🏽"]
-
-    def test_empty_string(self):
-        breaker = CharacterBreaker("", "en_GB")
-        chars = list(breaker)
-        assert chars == []
-
-    def test_unicode_text(self):
-        breaker = CharacterBreaker("Café", "en_GB")
-        chars = list(breaker)
-        assert chars == ["C", "a", "f", "é"]
-
-    def test_with_locale_object(self):
-        locale = Locale("en", "GB")
-        breaker = CharacterBreaker("Hello", locale)
-        chars = list(breaker)
-        assert chars == ["H", "e", "l", "l", "o"]
 
 
 class TestSentenceBreaker:

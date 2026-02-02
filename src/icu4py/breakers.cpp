@@ -371,6 +371,24 @@ PyType_Spec BaseBreaker_spec = {
     BaseBreaker_slots
 };
 
+int CharacterBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
+    return Breaker_init_impl(self, args, kwds, BreakIterator::createCharacterInstance);
+}
+
+PyType_Slot CharacterBreaker_slots[] = {
+    {Py_tp_doc, const_cast<char*>("Character break iterator")},
+    {Py_tp_init, reinterpret_cast<void*>(CharacterBreaker_init)},
+    {0, nullptr}
+};
+
+PyType_Spec CharacterBreaker_spec = {
+    "icu4py.breakers.CharacterBreaker",
+    sizeof(BreakerObject),
+    0,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    CharacterBreaker_slots
+};
+
 int WordBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
     return Breaker_init_impl(self, args, kwds, BreakIterator::createWordInstance);
 }
@@ -405,24 +423,6 @@ PyType_Spec LineBreaker_spec = {
     0,
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
     LineBreaker_slots
-};
-
-int CharacterBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
-    return Breaker_init_impl(self, args, kwds, BreakIterator::createCharacterInstance);
-}
-
-PyType_Slot CharacterBreaker_slots[] = {
-    {Py_tp_doc, const_cast<char*>("Character break iterator")},
-    {Py_tp_init, reinterpret_cast<void*>(CharacterBreaker_init)},
-    {0, nullptr}
-};
-
-PyType_Spec CharacterBreaker_spec = {
-    "icu4py.breakers.CharacterBreaker",
-    sizeof(BreakerObject),
-    0,
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
-    CharacterBreaker_slots
 };
 
 int SentenceBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
@@ -500,6 +500,21 @@ int icu4py_breakers_exec(PyObject* m) {
         return -1;
     }
 
+    PyObject* char_type = PyType_FromModuleAndSpec(m, &CharacterBreaker_spec, bases);
+    Py_DECREF(bases);
+    if (char_type == nullptr) {
+        return -1;
+    }
+    if (PyModule_AddObject(m, "CharacterBreaker", char_type) < 0) {
+        Py_DECREF(char_type);
+        return -1;
+    }
+
+    bases = PyTuple_Pack(1, base_type);
+    if (bases == nullptr) {
+        return -1;
+    }
+
     PyObject* word_type = PyType_FromModuleAndSpec(m, &WordBreaker_spec, bases);
     Py_DECREF(bases);
     if (word_type == nullptr) {
@@ -522,21 +537,6 @@ int icu4py_breakers_exec(PyObject* m) {
     }
     if (PyModule_AddObject(m, "LineBreaker", line_type) < 0) {
         Py_DECREF(line_type);
-        return -1;
-    }
-
-    bases = PyTuple_Pack(1, base_type);
-    if (bases == nullptr) {
-        return -1;
-    }
-
-    PyObject* char_type = PyType_FromModuleAndSpec(m, &CharacterBreaker_spec, bases);
-    Py_DECREF(bases);
-    if (char_type == nullptr) {
-        return -1;
-    }
-    if (PyModule_AddObject(m, "CharacterBreaker", char_type) < 0) {
-        Py_DECREF(char_type);
         return -1;
     }
 
