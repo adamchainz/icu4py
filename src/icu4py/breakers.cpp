@@ -39,18 +39,12 @@ struct BreakerObject {
     PyObject_HEAD
     BreakIterator* breaker;
     UnicodeString text;
+    int32_t current_pos;
 };
 
 struct SegmentIteratorObject {
     PyObject_HEAD
     BreakerObject* breaker;
-    int32_t current_pos;
-};
-
-struct StringIteratorObject {
-    PyObject_HEAD
-    BreakerObject* breaker;
-    int32_t current_pos;
 };
 
 void BaseBreaker_dealloc(BreakerObject* self) {
@@ -64,6 +58,7 @@ PyObject* BaseBreaker_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
     if (self != nullptr) {
         self->breaker = nullptr;
         new (&self->text) UnicodeString();
+        self->current_pos = 0;
     }
     return reinterpret_cast<PyObject*>(self);
 }
@@ -130,12 +125,25 @@ int Breaker_init_impl(BreakerObject* self, PyObject* args, PyObject* kwds,
 
     self->text = UnicodeString::fromUTF8(StringPiece(text, text_len));
     self->breaker->setText(self->text);
+    self->breaker->first();
+    self->current_pos = 0;
 
     return 0;
 }
 
+int SegmentIterator_traverse(SegmentIteratorObject* self, visitproc visit, void* arg) {
+    Py_VISIT(self->breaker);
+    return 0;
+}
+
+int SegmentIterator_clear(SegmentIteratorObject* self) {
+    Py_CLEAR(self->breaker);
+    return 0;
+}
+
 void SegmentIterator_dealloc(SegmentIteratorObject* self) {
-    Py_XDECREF(self->breaker);
+    PyObject_GC_UnTrack(self);
+    SegmentIterator_clear(self);
     Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
@@ -146,12 +154,21 @@ PyObject* SegmentIterator_iter(PyObject* self) {
 
 PyObject* SegmentIterator_iternext(SegmentIteratorObject* self) {
     int32_t next_pos;
+    int32_t start;
 
 #ifdef Py_GIL_DISABLED
     Py_BEGIN_CRITICAL_SECTION(self->breaker);
 #endif
 
     next_pos = self->breaker->breaker->next();
+
+    if (next_pos == BreakIterator::DONE) {
+        next_pos = BreakIterator::DONE;
+        start = -1;
+    } else {
+        start = self->breaker->current_pos;
+        self->breaker->current_pos = next_pos;
+    }
 
 #ifdef Py_GIL_DISABLED
     Py_END_CRITICAL_SECTION();
@@ -161,14 +178,13 @@ PyObject* SegmentIterator_iternext(SegmentIteratorObject* self) {
         return nullptr;
     }
 
-    int32_t start = self->current_pos;
-    self->current_pos = next_pos;
-
     return Py_BuildValue("(ii)", start, next_pos);
 }
 
 PyType_Slot SegmentIterator_slots[] = {
     {Py_tp_dealloc, reinterpret_cast<void*>(SegmentIterator_dealloc)},
+    {Py_tp_traverse, reinterpret_cast<void*>(SegmentIterator_traverse)},
+    {Py_tp_clear, reinterpret_cast<void*>(SegmentIterator_clear)},
     {Py_tp_iter, reinterpret_cast<void*>(SegmentIterator_iter)},
     {Py_tp_iternext, reinterpret_cast<void*>(SegmentIterator_iternext)},
     {0, nullptr}
@@ -178,28 +194,28 @@ PyType_Spec SegmentIterator_spec = {
     "icu4py.breakers._SegmentIterator",
     sizeof(SegmentIteratorObject),
     0,
-    Py_TPFLAGS_DEFAULT,
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_GC,
     SegmentIterator_slots
 };
 
-void StringIterator_dealloc(StringIteratorObject* self) {
-    Py_XDECREF(self->breaker);
-    Py_TYPE(self)->tp_free(reinterpret_cast<void*>(self));
-}
-
-PyObject* StringIterator_iter(PyObject* self) {
-    Py_INCREF(self);
-    return self;
-}
-
-PyObject* StringIterator_iternext(StringIteratorObject* self) {
+PyObject* BaseBreaker_iternext(BreakerObject* self) {
     int32_t next_pos;
+    int32_t start;
+    UnicodeString segment;
 
 #ifdef Py_GIL_DISABLED
-    Py_BEGIN_CRITICAL_SECTION(self->breaker);
+    Py_BEGIN_CRITICAL_SECTION(self);
 #endif
 
-    next_pos = self->breaker->breaker->next();
+    next_pos = self->breaker->next();
+
+    if (next_pos == BreakIterator::DONE) {
+        next_pos = BreakIterator::DONE;
+    } else {
+        start = self->current_pos;
+        self->text.extractBetween(start, next_pos, segment);
+        self->current_pos = next_pos;
+    }
 
 #ifdef Py_GIL_DISABLED
     Py_END_CRITICAL_SECTION();
@@ -209,29 +225,10 @@ PyObject* StringIterator_iternext(StringIteratorObject* self) {
         return nullptr;
     }
 
-    UnicodeString segment;
-    self->breaker->text.extractBetween(self->current_pos, next_pos, segment);
-    self->current_pos = next_pos;
-
     std::string utf8;
     segment.toUTF8String(utf8);
     return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
 }
-
-PyType_Slot StringIterator_slots[] = {
-    {Py_tp_dealloc, reinterpret_cast<void*>(StringIterator_dealloc)},
-    {Py_tp_iter, reinterpret_cast<void*>(StringIterator_iter)},
-    {Py_tp_iternext, reinterpret_cast<void*>(StringIterator_iternext)},
-    {0, nullptr}
-};
-
-PyType_Spec StringIterator_spec = {
-    "icu4py.breakers._StringIterator",
-    sizeof(StringIteratorObject),
-    0,
-    Py_TPFLAGS_DEFAULT,
-    StringIterator_slots
-};
 
 PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
 #if PY_VERSION_HEX < 0x030B0000
@@ -246,7 +243,7 @@ PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
     ModuleState* state = get_module_state(module);
 
     auto* iter = reinterpret_cast<SegmentIteratorObject*>(
-        PyObject_CallNoArgs(state->segment_iterator_type));
+        PyObject_GC_New(SegmentIteratorObject, reinterpret_cast<PyTypeObject*>(state->segment_iterator_type)));
 
     if (iter == nullptr) {
         return nullptr;
@@ -260,49 +257,21 @@ PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
 #endif
 
     self->breaker->first();
-    iter->current_pos = 0;
+    self->current_pos = 0;
 
 #ifdef Py_GIL_DISABLED
     Py_END_CRITICAL_SECTION();
 #endif
 
+    PyObject_GC_Track(iter);
     return reinterpret_cast<PyObject*>(iter);
 }
 
 PyObject* BaseBreaker_iter(BreakerObject* self) {
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#else
-    PyObject* module = PyType_GetModule(Py_TYPE(self));
-#endif
-    if (module == nullptr) {
-        return nullptr;
-    }
-
-    ModuleState* state = get_module_state(module);
-
-    auto* iter = reinterpret_cast<StringIteratorObject*>(
-        PyObject_CallNoArgs(state->string_iterator_type));
-
-    if (iter == nullptr) {
-        return nullptr;
-    }
-
-    Py_INCREF(self);
-    iter->breaker = self;
-
-#ifdef Py_GIL_DISABLED
-    Py_BEGIN_CRITICAL_SECTION(self);
-#endif
-
     self->breaker->first();
-    iter->current_pos = 0;
-
-#ifdef Py_GIL_DISABLED
-    Py_END_CRITICAL_SECTION();
-#endif
-
-    return reinterpret_cast<PyObject*>(iter);
+    self->current_pos = 0;
+    Py_INCREF(self);
+    return reinterpret_cast<PyObject*>(self);
 }
 
 PyMethodDef Breaker_methods[] = {
@@ -359,6 +328,7 @@ PyType_Slot BaseBreaker_slots[] = {
     {Py_tp_new, reinterpret_cast<void*>(BaseBreaker_new)},
     {Py_tp_init, reinterpret_cast<void*>(BaseBreaker_init)},
     {Py_tp_iter, reinterpret_cast<void*>(BaseBreaker_iter)},
+    {Py_tp_iternext, reinterpret_cast<void*>(BaseBreaker_iternext)},
     {Py_tp_methods, Breaker_methods},
     {0, nullptr}
 };
@@ -477,15 +447,6 @@ int icu4py_breakers_exec(PyObject* m) {
         return -1;
     }
 
-    PyObject* string_iter_type = PyType_FromModuleAndSpec(m, &StringIterator_spec, nullptr);
-    if (string_iter_type == nullptr) {
-        return -1;
-    }
-    if (PyModule_AddObject(m, "_StringIterator", string_iter_type) < 0) {
-        Py_DECREF(string_iter_type);
-        return -1;
-    }
-
     PyObject* base_type = PyType_FromModuleAndSpec(m, &BaseBreaker_spec, nullptr);
     if (base_type == nullptr) {
         return -1;
@@ -560,8 +521,7 @@ int icu4py_breakers_exec(PyObject* m) {
     state->segment_iterator_type = segment_iter_type;
     Py_INCREF(state->segment_iterator_type);
 
-    state->string_iterator_type = string_iter_type;
-    Py_INCREF(state->string_iterator_type);
+    state->string_iterator_type = nullptr;
 
     PyObject* locale_module = PyImport_ImportModule("icu4py.locale");
     if (locale_module == nullptr) {
@@ -582,7 +542,6 @@ int icu4py_breakers_traverse(PyObject* m, visitproc visit, void* arg) {
     ModuleState* state = get_module_state(m);
     Py_VISIT(state->locale_type);
     Py_VISIT(state->segment_iterator_type);
-    Py_VISIT(state->string_iterator_type);
     return 0;
 }
 
@@ -590,7 +549,6 @@ int icu4py_breakers_clear(PyObject* m) {
     ModuleState* state = get_module_state(m);
     Py_CLEAR(state->locale_type);
     Py_CLEAR(state->segment_iterator_type);
-    Py_CLEAR(state->string_iterator_type);
     return 0;
 }
 
