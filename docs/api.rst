@@ -57,7 +57,7 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
     Example usage:
 
-    .. code-block:: pycon
+    .. doctest::
 
        >>> from icu4py.breakers import WordBreaker
        >>> breaker = WordBreaker("Hello World", "en_GB")
@@ -72,7 +72,7 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
     Example usage:
 
-    .. code-block:: pycon
+    .. doctest::
 
        >>> from icu4py.breakers import WordBreaker
        >>> breaker = WordBreaker("Hello World", "en_GB")
@@ -88,7 +88,7 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
   Example usage:
 
-  .. code-block:: pycon
+  .. doctest::
 
      >>> from icu4py.breakers import CharacterBreaker
      >>> greeting = "👋🏽 hi"
@@ -107,7 +107,7 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
   Example usage:
 
-  .. code-block:: pycon
+  .. doctest::
 
      >>> from icu4py.breakers import WordBreaker
      >>> exclamation = "A self-made rabbit."
@@ -123,12 +123,12 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
   Example usage:
 
-  .. code-block:: pycon
+  .. doctest::
 
      >>> from icu4py.breakers import LineBreaker
-     >>> review = "It’s quite thirst-quenching."
+     >>> review = "It's quite thirst-quenching."
      >>> list(LineBreaker(review, "en_GB"))
-     ['It’s ', 'quite ', 'thirst-', 'quenching.']
+     ["It's ", 'quite ', 'thirst-', 'quenching.']
 
 .. class:: SentenceBreaker(text: str, locale: str | Locale)
 
@@ -139,7 +139,7 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
   Example usage:
 
-  .. code-block:: pycon
+  .. doctest::
 
      >>> from icu4py.breakers import SentenceBreaker
      >>> tagline = 'You asked "Why?". We answered "Why not?"'
@@ -178,7 +178,7 @@ __ https://unicode-org.github.io/icu/userguide/locale/
 
   Example usage:
 
-  .. code-block:: pycon
+  .. doctest::
 
      >>> from icu4py.locale import Locale
      >>> locale = Locale("en", "GB")
@@ -273,7 +273,7 @@ __ https://unicode-org.github.io/icu/userguide/format_parse/messages/
 
     Example usage:
 
-    .. code-block:: pycon
+    .. doctest::
 
        >>> from icu4py.messageformat import MessageFormat
        >>> pattern = "{count,plural,one {# file} other {# files}}"
@@ -285,7 +285,7 @@ __ https://unicode-org.github.io/icu/userguide/format_parse/messages/
 
     A more complex example:
 
-    .. code-block:: pycon
+    .. doctest::
 
       >>> from icu4py.messageformat import MessageFormat
       >>> pattern = (
@@ -305,7 +305,7 @@ __ https://unicode-org.github.io/icu/userguide/format_parse/messages/
 
     Formatting a ``datetime``:
 
-    .. code-block:: pycon
+    .. doctest::
 
       >>> import datetime as dt
       >>> from icu4py.messageformat import MessageFormat
