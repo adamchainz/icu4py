@@ -3,11 +3,50 @@ from __future__ import annotations
 from datetime import date, datetime, timezone
 from decimal import Decimal
 
+import pytest
+
 from icu4py.locale import Locale
 from icu4py.messageformat import MessageFormat
 
 
 class TestMessageFormat:
+    def test_invalid_value(self):
+        pattern = "Hello, {name}!"
+        fmt = MessageFormat(pattern, "en")
+
+        with pytest.raises(TypeError) as exc_info:
+            fmt.format({"name": ["invalid", "list"]})  # type: ignore[dict-item]
+
+        assert str(exc_info.value) == (
+            "Parameter values must be int, float, str, Decimal, datetime, or date, "
+            "got ['invalid', 'list'] for key 'name'"
+        )
+
+    def test_invalid_value_custom(self):
+        pattern = "Test {obj}"
+        fmt = MessageFormat(pattern, "en")
+
+        class Witch:
+            def __repr__(self):
+                return "<Witch instance>"
+
+        with pytest.raises(TypeError) as exc_info:
+            fmt.format({"obj": Witch()})  # type: ignore[dict-item]
+
+        assert str(exc_info.value) == (
+            "Parameter values must be int, float, str, Decimal, datetime, or date, "
+            "got <Witch instance> for key 'obj'"
+        )
+
+    def test_invalid_key(self):
+        pattern = "Test {x}"
+        fmt = MessageFormat(pattern, "en")
+
+        with pytest.raises(TypeError) as exc_info:
+            fmt.format({123: "value"})  # type: ignore[dict-item]
+
+        assert str(exc_info.value) == "Dictionary keys must be strings, got 123"
+
     def test_simple_string_substitution(self):
         pattern = "Hello, {name}!"
         fmt = MessageFormat(pattern, "en_GB")

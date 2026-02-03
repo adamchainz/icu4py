@@ -279,7 +279,20 @@ bool pyobject_to_formattable(PyObject* obj, Formattable& formattable, ModuleStat
           return true;
       }
 
-      PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, Decimal, datetime, or date");
+      PyObject* repr = PyObject_Repr(obj);
+      if (repr != nullptr) {
+          const char* repr_str = PyUnicode_AsUTF8(repr);
+          if (repr_str != nullptr) {
+              PyErr_Format(PyExc_TypeError,
+                          "Parameter values must be int, float, str, Decimal, datetime, or date, got %s",
+                          repr_str);
+          } else {
+              PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, Decimal, datetime, or date");
+          }
+          Py_DECREF(repr);
+      } else {
+          PyErr_SetString(PyExc_TypeError, "Parameter values must be int, float, str, Decimal, datetime, or date");
+      }
       return false;
 }
 
@@ -331,14 +344,57 @@ bool dict_to_parallel_arrays(PyObject* dict, ModuleState* mod_state, UnicodeStri
         Py_ssize_t key_size;
         const char* key_str = PyUnicode_AsUTF8AndSize(key, &key_size);
         if (key_str == nullptr) {
-            PyErr_SetString(PyExc_TypeError, "Dictionary keys must be strings");
+            PyErr_Clear();
+            PyObject* key_repr = PyObject_Repr(key);
+            if (key_repr != nullptr) {
+                const char* key_repr_str = PyUnicode_AsUTF8(key_repr);
+                if (key_repr_str != nullptr) {
+                    PyErr_Format(PyExc_TypeError, "Dictionary keys must be strings, got %s", key_repr_str);
+                } else {
+                    PyErr_SetString(PyExc_TypeError, "Dictionary keys must be strings");
+                }
+                Py_DECREF(key_repr);
+            } else {
+                PyErr_SetString(PyExc_TypeError, "Dictionary keys must be strings");
+            }
             err = true;
             break;
         }
         names_ptr[i] = UnicodeString::fromUTF8(StringPiece(key_str, key_size));
 
         if (!pyobject_to_formattable(value, values_ptr[i], mod_state)) {
-            if (!PyErr_Occurred()) {
+            if (PyErr_Occurred()) {
+                PyObject *exc_type, *exc_value, *exc_tb;
+                PyErr_Fetch(&exc_type, &exc_value, &exc_tb);
+
+                PyObject* key_repr = PyObject_Repr(key);
+
+                if (key_repr != nullptr) {
+                    const char* key_repr_str = PyUnicode_AsUTF8(key_repr);
+
+                    if (key_repr_str != nullptr && exc_value != nullptr) {
+                        PyObject* orig_msg = PyObject_Str(exc_value);
+                        if (orig_msg != nullptr) {
+                            const char* orig_msg_str = PyUnicode_AsUTF8(orig_msg);
+                            if (orig_msg_str != nullptr) {
+                                PyErr_Format(exc_type != nullptr ? (PyObject*)exc_type : PyExc_TypeError,
+                                           "%s for key %s",
+                                           orig_msg_str, key_repr_str);
+                            }
+                            Py_DECREF(orig_msg);
+                        }
+                    }
+                }
+
+                Py_XDECREF(key_repr);
+                Py_XDECREF(exc_type);
+                Py_XDECREF(exc_value);
+                Py_XDECREF(exc_tb);
+
+                if (!PyErr_Occurred()) {
+                    PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
+                }
+            } else {
                 PyErr_SetString(PyExc_TypeError, "Failed to convert dictionary value to Formattable");
             }
             err = true;
