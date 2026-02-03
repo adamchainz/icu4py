@@ -182,5 +182,6 @@ allow_untyped_defs = true
 ignore_directives = [
   "autoclass",
   "autodata",
+  "doctest",
 ]
 report_level = "ERROR"
