@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 import os
-import sys
 from pathlib import Path
 
 import tomllib
@@ -14,7 +13,6 @@ import tomllib
 # -- Path setup --------------------------------------------------------------
 
 here = Path(__file__).parent.resolve()
-sys.path.insert(0, str(here / ".." / "src"))
 
 # -- Project information -----------------------------------------------------
 
