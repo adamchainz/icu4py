@@ -22,6 +22,10 @@ Changelog
 
   `PR #49 <https://github.com/adamchainz/icu4py/pull/49>`__.
 
+* Add :attr:`.MessageFormat.pattern` and :attr:`.MessageFormat.locale` properties to expose the pattern string and locale.
+
+  `PR #53 <https://github.com/adamchainz/icu4py/pull/53>`__.
+
 0.2.0 (2026-01-20)
 ------------------
 

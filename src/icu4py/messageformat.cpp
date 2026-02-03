@@ -416,6 +416,38 @@ PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
     return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
 }
 
+PyObject* MessageFormat_get_pattern(MessageFormatObject* self, void* closure) {
+    UnicodeString pattern_ustr;
+    self->formatter->toPattern(pattern_ustr);
+    std::string pattern_utf8;
+    pattern_ustr.toUTF8String(pattern_utf8);
+    return PyUnicode_FromString(pattern_utf8.c_str());
+}
+
+PyObject* MessageFormat_get_locale(MessageFormatObject* self, void* closure) {
+#if PY_VERSION_HEX < 0x030B0000
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
+#else
+    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
+#endif
+    if (module == nullptr) {
+        return nullptr;
+    }
+    ModuleState* mod_state = get_module_state(module);
+
+    const Locale& locale = self->formatter->getLocale();
+
+    PyTypeObject* locale_type = reinterpret_cast<PyTypeObject*>(mod_state->locale_type);
+    auto* locale_obj = reinterpret_cast<LocaleObject*>(locale_type->tp_alloc(locale_type, 0));
+    if (locale_obj == nullptr) {
+        return nullptr;
+    }
+
+    locale_obj->locale = new Locale(locale);
+
+    return reinterpret_cast<PyObject*>(locale_obj);
+}
+
 PyObject* MessageFormat_repr(MessageFormatObject* self) {
     UnicodeString pattern_ustr;
     self->formatter->toPattern(pattern_ustr);
@@ -425,7 +457,7 @@ PyObject* MessageFormat_repr(MessageFormatObject* self) {
     const Locale& locale = self->formatter->getLocale();
     const char* locale_name = locale.getName();
 
-    return PyUnicode_FromFormat("MessageFormat('%s', '%s')",
+    return PyUnicode_FromFormat("MessageFormat('%s', Locale('%s'))",
                                  pattern_utf8.c_str(), locale_name);
 }
 
@@ -437,6 +469,14 @@ PyMethodDef MessageFormat_methods[] = {
     {nullptr, nullptr, 0, nullptr}
 };
 
+PyGetSetDef MessageFormat_getsetters[] = {
+    {const_cast<char*>("pattern"), reinterpret_cast<getter>(MessageFormat_get_pattern), nullptr,
+     const_cast<char*>("The message pattern string"), nullptr},
+    {const_cast<char*>("locale"), reinterpret_cast<getter>(MessageFormat_get_locale), nullptr,
+     const_cast<char*>("The locale used for formatting"), nullptr},
+    {nullptr, nullptr, nullptr, nullptr, nullptr}
+};
+
 PyType_Slot MessageFormat_slots[] = {
     {Py_tp_doc, const_cast<char*>("ICU MessageFormat")},
     {Py_tp_dealloc, reinterpret_cast<void*>(MessageFormat_dealloc)},
@@ -444,6 +484,7 @@ PyType_Slot MessageFormat_slots[] = {
     {Py_tp_new, reinterpret_cast<void*>(MessageFormat_new)},
     {Py_tp_repr, reinterpret_cast<void*>(MessageFormat_repr)},
     {Py_tp_methods, MessageFormat_methods},
+    {Py_tp_getset, MessageFormat_getsetters},
     {0, nullptr}
 };
 

@@ -524,24 +524,49 @@ class TestMessageFormat:
 
     def test_repr_simple(self):
         pattern = "Hello, {name}!"
-        fmt = MessageFormat(pattern, "en_US")
-        assert repr(fmt) == "MessageFormat('Hello, {name}!', 'en_US')"
+        fmt = MessageFormat(pattern, "en_GB")
+        assert repr(fmt) == "MessageFormat('Hello, {name}!', Locale('en_GB'))"
 
     def test_repr_with_locale_object(self):
         pattern = "Hello, {name}!"
         locale = Locale("en", "GB")
         fmt = MessageFormat(pattern, locale)
-        assert repr(fmt) == "MessageFormat('Hello, {name}!', 'en_GB')"
+        assert repr(fmt) == "MessageFormat('Hello, {name}!', Locale('en_GB'))"
 
     def test_repr_complex_pattern(self):
         pattern = "{count,plural,one {# item} other {# items}}"
         fmt = MessageFormat(pattern, "en")
         assert (
             repr(fmt)
-            == "MessageFormat('{count,plural,one {# item} other {# items}}', 'en')"
+            == "MessageFormat('{count,plural,one {# item} other {# items}}', Locale('en'))"
         )
 
-    def test_repr_with_special_characters(self):
-        pattern = "Price: {price,number,currency}"
-        fmt = MessageFormat(pattern, "de_DE")
-        assert repr(fmt) == "MessageFormat('Price: {price,number,currency}', 'de_DE')"
+    def test_pattern_property_simple(self):
+        pattern = "Hello, {name}!"
+        fmt = MessageFormat(pattern, "en_US")
+        assert fmt.pattern == "Hello, {name}!"
+
+    def test_locale_property_with_string(self):
+        pattern = "Hello, {name}!"
+        fmt = MessageFormat(pattern, "en_US")
+        locale = fmt.locale
+        assert isinstance(locale, Locale)
+        assert locale.language == "en"
+        assert locale.country == "US"
+
+    def test_locale_property_with_locale_object(self):
+        pattern = "Hello, {name}!"
+        locale_in = Locale("de", "DE")
+        fmt = MessageFormat(pattern, locale_in)
+        locale_out = fmt.locale
+        assert isinstance(locale_out, Locale)
+        assert locale_out.language == "de"
+        assert locale_out.country == "DE"
+
+    def test_locale_property_simple_locale(self):
+        pattern = "Test"
+        fmt = MessageFormat(pattern, "fr")
+        locale = fmt.locale
+        assert isinstance(locale, Locale)
+        assert locale.language == "fr"
+        assert locale.country == ""

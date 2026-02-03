@@ -243,6 +243,16 @@ __ https://unicode-org.github.io/icu/userguide/format_parse/messages/
   :param pattern: The message pattern string.
   :param locale: The locale to use, as either a string (an ICU style C locale) or a :class:`~icu4py.locale.Locale` object.
 
+  .. attribute:: pattern
+     :type: str
+
+     The message pattern string.
+
+  .. attribute:: locale
+     :type: Locale
+
+     The locale used for formatting, as a :class:`~icu4py.locale.Locale` object.
+
   .. method:: format(values: dict[str, Any]) -> str
 
     Format the message with the given values.
