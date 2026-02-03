@@ -2,8 +2,6 @@
 Changelog
 =========
 
-* Add :mod:`.breakers` module with :class:`.CharacterBreaker`, :class:`.WordBreaker`, :class:`.LineBreaker`, and :class:`.SentenceBreaker` classes for finding text boundaries.
-
 * Embed ICU version 78.2 consistently in wheels across all platforms, via the custom ICU4C build repository, `icu4c-builds <https://github.com/adamchainz/icu4c-builds>`__.
 
   `PR #45 <https://github.com/adamchainz/icu4py/pull/45>`__.
@@ -15,6 +13,10 @@ Changelog
 * Ship wheels for Windows.
 
   `PR #9 <https://github.com/adamchainz/icu4py/pull/9>`__.
+
+* Add :mod:`.breakers` module for text boundary analysis of characters, words, lines, and sentences.
+
+  `PR #52 <https://github.com/adamchainz/icu4py/pull/52>`__.
 
 * Add ``repr()`` implementations to :class:`.Locale` and :class:`.MessageFormat`.
 
