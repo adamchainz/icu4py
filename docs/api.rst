@@ -37,6 +37,18 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
   :param text: The text to analyze for boundaries.
   :param locale: The locale to use, as either a string (an ICU style C locale) or a :class:`~icu4py.locale.Locale` object.
 
+  .. attribute:: text
+
+    The text being analyzed.
+
+    :type: str
+
+  .. attribute:: locale
+
+    The locale being used for boundary analysis.
+
+    :type: Locale
+
   .. method:: __iter__() -> Iterator[str]
 
     Iterate over text segments split by boundaries.

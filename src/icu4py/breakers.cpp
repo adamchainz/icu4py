@@ -40,6 +40,7 @@ struct BreakerObject {
     BreakIterator* breaker;
     UnicodeString text;
     int32_t current_pos;
+    Locale locale;
 };
 
 struct SegmentIteratorObject {
@@ -50,6 +51,7 @@ struct SegmentIteratorObject {
 void BaseBreaker_dealloc(BreakerObject* self) {
     delete self->breaker;
     self->text.~UnicodeString();
+    self->locale.~Locale();
     Py_TYPE(self)->tp_free(reinterpret_cast<PyObject*>(self));
 }
 
@@ -59,6 +61,7 @@ PyObject* BaseBreaker_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
         self->breaker = nullptr;
         new (&self->text) UnicodeString();
         self->current_pos = 0;
+        new (&self->locale) Locale();
     }
     return reinterpret_cast<PyObject*>(self);
 }
@@ -127,6 +130,7 @@ int Breaker_init_impl(BreakerObject* self, PyObject* args, PyObject* kwds,
     self->breaker->setText(self->text);
     self->breaker->first();
     self->current_pos = 0;
+    self->locale = locale;
 
     return 0;
 }
@@ -274,6 +278,68 @@ PyObject* BaseBreaker_iter(BreakerObject* self) {
     return reinterpret_cast<PyObject*>(self);
 }
 
+PyObject* Breaker_text_getter(BreakerObject* self, void* Py_UNUSED(closure)) {
+    std::string utf8;
+    self->text.toUTF8String(utf8);
+    return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
+}
+
+PyObject* Breaker_locale_getter(BreakerObject* self, void* Py_UNUSED(closure)) {
+#if PY_VERSION_HEX < 0x030B0000
+    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
+#else
+    PyObject* module = PyType_GetModule(Py_TYPE(self));
+#endif
+    if (module == nullptr) {
+        return nullptr;
+    }
+
+    ModuleState* state = get_module_state(module);
+
+    PyObject* locale_obj = PyObject_CallFunction(state->locale_type, "ss",
+                                                  self->locale.getLanguage(),
+                                                  self->locale.getCountry());
+    return locale_obj;
+}
+
+PyObject* BaseBreaker_repr(BreakerObject* self) {
+    const char* type_name = Py_TYPE(self)->tp_name;
+
+    PyObject* text_obj = Breaker_text_getter(self, nullptr);
+    if (text_obj == nullptr) {
+        return nullptr;
+    }
+
+    PyObject* locale_obj = Breaker_locale_getter(self, nullptr);
+    if (locale_obj == nullptr) {
+        Py_DECREF(text_obj);
+        return nullptr;
+    }
+
+    PyObject* locale_repr = PyObject_Repr(locale_obj);
+    Py_DECREF(locale_obj);
+    if (locale_repr == nullptr) {
+        Py_DECREF(text_obj);
+        return nullptr;
+    }
+
+    PyObject* result = PyUnicode_FromFormat("<%s text=%R locale=%U>",
+                                            type_name,
+                                            text_obj,
+                                            locale_repr);
+    Py_DECREF(text_obj);
+    Py_DECREF(locale_repr);
+    return result;
+}
+
+PyGetSetDef Breaker_getsetters[] = {
+    {const_cast<char*>("text"), reinterpret_cast<getter>(Breaker_text_getter), nullptr,
+     const_cast<char*>("The text being analyzed"), nullptr},
+    {const_cast<char*>("locale"), reinterpret_cast<getter>(Breaker_locale_getter), nullptr,
+     const_cast<char*>("The locale being used"), nullptr},
+    {nullptr, nullptr, nullptr, nullptr, nullptr}
+};
+
 PyMethodDef Breaker_methods[] = {
     {"segments", reinterpret_cast<PyCFunction>(Breaker_segments), METH_NOARGS,
      "Iterate over (start, end) segment positions"},
@@ -327,9 +393,11 @@ PyType_Slot BaseBreaker_slots[] = {
     {Py_tp_dealloc, reinterpret_cast<void*>(BaseBreaker_dealloc)},
     {Py_tp_new, reinterpret_cast<void*>(BaseBreaker_new)},
     {Py_tp_init, reinterpret_cast<void*>(BaseBreaker_init)},
+    {Py_tp_repr, reinterpret_cast<void*>(BaseBreaker_repr)},
     {Py_tp_iter, reinterpret_cast<void*>(BaseBreaker_iter)},
     {Py_tp_iternext, reinterpret_cast<void*>(BaseBreaker_iternext)},
     {Py_tp_methods, Breaker_methods},
+    {Py_tp_getset, Breaker_getsetters},
     {0, nullptr}
 };
 

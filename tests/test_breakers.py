@@ -17,6 +17,71 @@ class TestBaseBreaker:
         with pytest.raises(TypeError, match="Cannot instantiate BaseBreaker directly"):
             BaseBreaker("hello", "en")
 
+    def test_repr_with_string_locale(self):
+        breaker = WordBreaker("Hello World", "en_GB")
+        result = repr(breaker)
+        assert (
+            result
+            == "<icu4py.breakers.WordBreaker text='Hello World' locale=Locale('en_GB')>"
+        )
+
+    def test_repr_with_locale_object(self):
+        locale = Locale("en", "GB")
+        breaker = WordBreaker("Test", locale)
+        result = repr(breaker)
+        assert (
+            result == "<icu4py.breakers.WordBreaker text='Test' locale=Locale('en_GB')>"
+        )
+
+    def test_repr_with_unicode(self):
+        breaker = CharacterBreaker("Café", "fr_FR")
+        result = repr(breaker)
+        assert (
+            result
+            == "<icu4py.breakers.CharacterBreaker text='Café' locale=Locale('fr_FR')>"
+        )
+
+    def test_text_property(self):
+        breaker = WordBreaker("Hello World", "en_GB")
+        assert breaker.text == "Hello World"
+
+    def test_text_property_unicode(self):
+        text = "Café résumé"
+        breaker = WordBreaker(text, "fr_FR")
+        assert breaker.text == text
+
+    def test_text_property_empty(self):
+        breaker = SentenceBreaker("", "en_GB")
+        assert breaker.text == ""
+
+    def test_locale_property_returns_locale_object(self):
+        breaker = WordBreaker("Hello", "en_GB")
+        locale = breaker.locale
+        assert isinstance(locale, Locale)
+        assert locale.language == "en"
+        assert locale.country == "GB"
+
+    def test_locale_property_from_string(self):
+        breaker = CharacterBreaker("Test", "fr_FR")
+        locale = breaker.locale
+        assert isinstance(locale, Locale)
+        assert locale.language == "fr"
+        assert locale.country == "FR"
+
+    def test_locale_property_from_locale_object(self):
+        input_locale = Locale("ja", "JP")
+        breaker = LineBreaker("テスト", input_locale)
+        locale = breaker.locale
+        assert isinstance(locale, Locale)
+        assert locale.language == "ja"
+        assert locale.country == "JP"
+
+    def test_locale_property_root_locale(self):
+        breaker = WordBreaker("Hello", "en")
+        locale = breaker.locale
+        assert isinstance(locale, Locale)
+        assert locale.language == "en"
+
 
 class TestCharacterBreaker:
     def test_simple_characters(self):
