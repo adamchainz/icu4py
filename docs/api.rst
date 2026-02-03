@@ -309,6 +309,6 @@ __ https://unicode-org.github.io/icu/userguide/format_parse/messages/
 
       >>> import datetime as dt
       >>> from icu4py.messageformat import MessageFormat
-      >>> fmt = MessageFormat("We gotta go back to {when,date,full}", "en_GB")
+      >>> fmt = MessageFormat("Year {when,date,::yyyy}, month {when,date,::MM}", "en_GB")
       >>> fmt.format({"when": dt.datetime(1985, 10, 26, 1, 24)})
-      'We gotta go back to Saturday, 26 October 1985'
+      'Year 1985, month 10'
