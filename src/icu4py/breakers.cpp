@@ -83,7 +83,7 @@ int Breaker_init_impl(BreakerObject* self, PyObject* args, PyObject* kwds,
 #if PY_VERSION_HEX < 0x030B0000
     PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #else
-    PyObject* module = PyType_GetModule(Py_TYPE(self));
+    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #endif
     if (module == nullptr) {
         return -1;
@@ -236,12 +236,11 @@ PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
 #if PY_VERSION_HEX < 0x030B0000
     PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #else
-    PyObject* module = PyType_GetModule(Py_TYPE(self));
+    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #endif
     if (module == nullptr) {
         return nullptr;
     }
-
     ModuleState* state = get_module_state(module);
 
     auto* iter = reinterpret_cast<SegmentIteratorObject*>(
@@ -286,12 +285,11 @@ PyObject* Breaker_locale_getter(BreakerObject* self, void* Py_UNUSED(closure)) {
 #if PY_VERSION_HEX < 0x030B0000
     PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #else
-    PyObject* module = PyType_GetModule(Py_TYPE(self));
+    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
 #endif
     if (module == nullptr) {
         return nullptr;
     }
-
     ModuleState* state = get_module_state(module);
 
     PyObject* locale_obj = PyObject_CallFunction(state->locale_type, "ss",
@@ -358,18 +356,17 @@ int BaseBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
     }
 
     PyTypeObject* type = Py_TYPE(self);
-    PyTypeObject* base_type = nullptr;
-
 #if PY_VERSION_HEX < 0x030B0000
     PyObject* module = _PyType_GetModuleByDef(type, &breakersmodule);
 #else
-    PyObject* module = PyType_GetModule(type);
+    PyObject* module = PyType_GetModuleByDef(type, &breakersmodule);
 #endif
     if (module == nullptr) {
         return -1;
     }
+    ModuleState* state = get_module_state(module);
 
-    base_type = reinterpret_cast<PyTypeObject*>(PyObject_GetAttrString(module, "BaseBreaker"));
+    PyTypeObject* base_type = reinterpret_cast<PyTypeObject*>(PyObject_GetAttrString(module, "BaseBreaker"));
     if (base_type == nullptr) {
         return -1;
     }

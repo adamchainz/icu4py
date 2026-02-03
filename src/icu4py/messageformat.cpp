@@ -414,22 +414,28 @@ bool dict_to_parallel_arrays(PyObject* dict, ModuleState* mod_state, UnicodeStri
     return true;
 }
 
-PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
-    PyObject* params_dict;
-
-    if (!PyArg_ParseTuple(args, "O!", &PyDict_Type, &params_dict)) {
+PyObject* MessageFormat_format(PyObject* self,
+        PyTypeObject* defining_class,
+        PyObject* const* args,
+        Py_ssize_t nargs,
+        PyObject* kwnames) {
+    if (nargs != 1) {
+        PyErr_SetString(PyExc_TypeError, "format() takes exactly 1 argument");
         return nullptr;
     }
 
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
-#else
-    PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
-#endif
-    if (module == nullptr) {
+    PyObject* params_dict = args[0];
+    if (!PyDict_Check(params_dict)) {
+        PyErr_SetString(PyExc_TypeError, "argument must be a dict");
         return nullptr;
     }
-    ModuleState* mod_state = get_module_state(module);
+
+    ModuleState* mod_state = reinterpret_cast<ModuleState*>(PyType_GetModuleState(defining_class));
+    if (mod_state == nullptr) {
+        return nullptr;
+    }
+
+    auto* self_obj = reinterpret_cast<MessageFormatObject*>(self);
 
     UnicodeString* argumentNames = nullptr;
     Formattable* arguments = nullptr;
@@ -447,14 +453,14 @@ PyObject* MessageFormat_format(MessageFormatObject* self, PyObject* args) {
 
     // ICU objects need external synchronization
 #ifdef Py_GIL_DISABLED
-    Py_BEGIN_CRITICAL_SECTION(self);
+    Py_BEGIN_CRITICAL_SECTION(self_obj);
 #endif
 
     if (count == 0) {
         FieldPosition field_pos;
-        result = self->formatter->format(nullptr, 0, result, field_pos, status);
+        result = self_obj->formatter->format(nullptr, 0, result, field_pos, status);
     } else {
-        result = self->formatter->format(argumentNames, arguments, count, result, status);
+        result = self_obj->formatter->format(argumentNames, arguments, count, result, status);
     }
 
 #ifdef Py_GIL_DISABLED
@@ -520,7 +526,8 @@ PyObject* MessageFormat_repr(MessageFormatObject* self) {
 
 
 PyMethodDef MessageFormat_methods[] = {
-    {"format", reinterpret_cast<PyCFunction>(MessageFormat_format), METH_VARARGS,
+    {"format", reinterpret_cast<PyCFunction>(reinterpret_cast<void(*)(void)>(MessageFormat_format)),
+     METH_METHOD | METH_FASTCALL | METH_KEYWORDS,
      "Format the message with given parameters"},
     {nullptr, nullptr, 0, nullptr}
 };
