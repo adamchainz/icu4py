@@ -167,7 +167,6 @@ PyObject* SegmentIterator_iternext(SegmentIteratorObject* self) {
     next_pos = self->breaker->breaker->next();
 
     if (next_pos == BreakIterator::DONE) {
-        next_pos = BreakIterator::DONE;
         start = -1;
     } else {
         start = self->breaker->current_pos;
@@ -228,8 +227,9 @@ PyObject* BaseBreaker_iternext(BreakerObject* self) {
     }
 
     std::string utf8;
+    utf8.reserve((next_pos - start) * 3 / 2);
     self->text.tempSubStringBetween(start, next_pos).toUTF8String(utf8);
-    return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
+    return PyUnicode_FromStringAndSize(utf8.data(), utf8.size());
 }
 
 PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
