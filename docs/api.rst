@@ -143,8 +143,12 @@ __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
 
      >>> from icu4py.breakers import SentenceBreaker
      >>> tagline = 'You asked "Why?". We answered "Why not?"'
-     >>> list(SentenceBreaker(tagline, "en_GB"))
+     >>> list(SentenceBreaker(tagline, "en_GB@ss=standard"))
      ['You asked "Why?". ', 'We answered "Why not?"']
+
+  (The ``ss=standard`` locale extension enables `sentence break filters`__, to filter out false breaks, like the perioad after ``Dr.``.)
+
+  __ https://unicode-org.github.io/icu/userguide/boundaryanalysis/#sentence-break-filters
 
 ``icu4py.locale``
 =================

@@ -10,7 +10,7 @@ Split text into sentences with :class:`~icu4py.breakers.SentenceBreaker`:
 
    >>> from icu4py.breakers import SentenceBreaker
    >>> text = 'You asked "Why?". We answered "Why not?"'
-   >>> breaker = SentenceBreaker(text, "en_GB")
+   >>> breaker = SentenceBreaker(text, "en_GB@ss=standard")
    >>> list(breaker)
    ['You asked "Why?". ', 'We answered "Why not?"']
 
