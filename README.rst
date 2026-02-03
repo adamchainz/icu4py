@@ -23,7 +23,7 @@ icu4py
 
 ----
 
-Bindings to the ICU (International Components for Unicode) library (ICU4C).
+Python bindings to the ICU (International Components for Unicode) library (ICU4C).
 
 Documentation
 =============
