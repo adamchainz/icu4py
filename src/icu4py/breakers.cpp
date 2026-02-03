@@ -205,7 +205,6 @@ PyType_Spec SegmentIterator_spec = {
 PyObject* BaseBreaker_iternext(BreakerObject* self) {
     int32_t next_pos;
     int32_t start;
-    UnicodeString segment;
 
 #ifdef Py_GIL_DISABLED
     Py_BEGIN_CRITICAL_SECTION(self);
@@ -214,10 +213,9 @@ PyObject* BaseBreaker_iternext(BreakerObject* self) {
     next_pos = self->breaker->next();
 
     if (next_pos == BreakIterator::DONE) {
-        next_pos = BreakIterator::DONE;
+        start = -1;
     } else {
         start = self->current_pos;
-        self->text.extractBetween(start, next_pos, segment);
         self->current_pos = next_pos;
     }
 
@@ -225,12 +223,12 @@ PyObject* BaseBreaker_iternext(BreakerObject* self) {
     Py_END_CRITICAL_SECTION();
 #endif
 
-    if (next_pos == BreakIterator::DONE) {
+    if (start == -1) {
         return nullptr;
     }
 
     std::string utf8;
-    segment.toUTF8String(utf8);
+    self->text.tempSubStringBetween(start, next_pos).toUTF8String(utf8);
     return PyUnicode_FromStringAndSize(utf8.c_str(), utf8.size());
 }
 
