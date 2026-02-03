@@ -47,6 +47,10 @@ setup(
             sources=["src/icu4py/messageformat.cpp"],
         ),
         ext(
+            "icu4py.breakers",
+            sources=["src/icu4py/breakers.cpp"],
+        ),
+        ext(
             "icu4py._version",
             sources=["src/icu4py/_version.cpp"],
         ),

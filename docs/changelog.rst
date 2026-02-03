@@ -14,6 +14,10 @@ Changelog
 
   `PR #9 <https://github.com/adamchainz/icu4py/pull/9>`__.
 
+* Add :mod:`.breakers` module for text boundary analysis of characters, words, lines, and sentences.
+
+  `PR #52 <https://github.com/adamchainz/icu4py/pull/52>`__.
+
 * Add ``repr()`` implementations to :class:`.Locale` and :class:`.MessageFormat`.
 
   `PR #49 <https://github.com/adamchainz/icu4py/pull/49>`__.

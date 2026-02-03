@@ -17,6 +17,135 @@ API
 
   A tuple of four integers representing the ICU version in the format ``(major, minor, patch, build)``, for example, ``(78, 2, 0, 0)``.
 
+``icu4py.breakers``
+===================
+
+This module wraps ICU's `boundary analysis`__ functionality, providing classes for finding text boundaries around characters, words, lines, and sentences.
+
+__ https://unicode-org.github.io/icu/userguide/boundaryanalysis/
+
+.. currentmodule:: icu4py.breakers
+
+.. class:: BaseBreaker(text: str, locale: str | Locale)
+
+  Base class for the following breaker subclasses, which cannot be instantiated directly.
+  Wraps ICU’s |BreakIterator class|__.
+
+  .. |BreakIterator class| replace:: ``BreakIterator`` class
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#details
+
+  :param text: The text to analyze for boundaries.
+  :param locale: The locale to use, as either a string (an ICU style C locale) or a :class:`~icu4py.locale.Locale` object.
+
+  .. attribute:: text
+
+    The text being analyzed.
+
+    :type: str
+
+  .. attribute:: locale
+
+    The locale being used for boundary analysis.
+
+    :type: Locale
+
+  .. method:: __iter__() -> Iterator[str]
+
+    Iterate over text segments split by boundaries.
+
+    :return: An iterator of strings, each representing a segment of text between boundaries.
+
+    Example usage:
+
+    .. code-block:: pycon
+
+       >>> from icu4py.breakers import WordBreaker
+       >>> breaker = WordBreaker("Hello World", "en_GB")
+       >>> list(breaker)
+       ['Hello', ' ', 'World']
+
+  .. method:: segments() -> Iterator[tuple[int, int]]
+
+    Iterate over boundary positions as ``(start, end)`` tuples.
+
+    :return: An iterator of ``(start, end)`` tuples representing boundary positions.
+
+    Example usage:
+
+    .. code-block:: pycon
+
+       >>> from icu4py.breakers import WordBreaker
+       >>> breaker = WordBreaker("Hello World", "en_GB")
+       >>> list(breaker.segments())
+       [(0, 5), (5, 6), (6, 11)]
+
+.. class:: CharacterBreaker(text: str, locale: str | Locale)
+
+  :class:`BaseBreaker` subclass for iterating over character (grapheme cluster) boundaries, handling combining characters and emoji sequences.
+  Wraps ICU's `character-break iterator`__.
+
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#afffc1125b180a61857f698e147b1a668
+
+  Example usage:
+
+  .. code-block:: pycon
+
+     >>> from icu4py.breakers import CharacterBreaker
+     >>> greeting = "👋🏽 hi"
+     >>> list(greeting)  # splits by codepoints, emoji and skin tone are separate
+     ['👋', '🏽', ' ', 'h', 'i']
+     >>> breaker = CharacterBreaker(greeting, "en_GB")
+     >>> list(breaker)  # splits by grapheme clusters, keeping emoji and skin tone together
+     ['👋🏽', ' ', 'h', 'i']
+
+.. class:: WordBreaker(text: str, locale: str | Locale)
+
+  :class:`BaseBreaker` subclass for iterating over word boundaries, correctly handling punctuation, hyphenated words, and contractions.
+  Wraps ICU's `word boundary iterator`__.
+
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#a6aa1459cc086397bdb85ccd1bb3c5500
+
+  Example usage:
+
+  .. code-block:: pycon
+
+     >>> from icu4py.breakers import WordBreaker
+     >>> exclamation = "A self-made rabbit."
+     >>> list(WordBreaker(exclamation, "en_GB"))
+     ['A', ' ', 'self', '-', 'made', ' ', 'rabbit', '.']
+
+.. class:: LineBreaker(text: str, locale: str | Locale)
+
+  :class:`BaseBreaker` subclass for iterating over line-break boundaries, which are incicate where text could be wrapped to the next line, correctly handling punctuation and hyphenated words.
+  Wraps ICU's `line-break iterator`__.
+
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#aae588706df064825f1bccb2a9165169e
+
+  Example usage:
+
+  .. code-block:: pycon
+
+     >>> from icu4py.breakers import LineBreaker
+     >>> review = "It’s quite thirst-quenching."
+     >>> list(LineBreaker(review, "en_GB"))
+     ['It’s ', 'quite ', 'thirst-', 'quenching.']
+
+.. class:: SentenceBreaker(text: str, locale: str | Locale)
+
+  :class:`BaseBreaker` subclass for iterating over sentence boundaries, handling periods within numbers, abbreviations, and trailing punctuation marks.
+  Wraps ICU's `sentence-break iterator`__.
+
+  __ https://unicode-org.github.io/icu-docs/apidoc/released/icu4c/classicu_1_1BreakIterator.html#ae161880c561882dad879112e15fde42b
+
+  Example usage:
+
+  .. code-block:: pycon
+
+     >>> from icu4py.breakers import SentenceBreaker
+     >>> tagline = 'You asked "Why?". We answered "Why not?"'
+     >>> list(SentenceBreaker(tagline, "en_GB"))
+     ['You asked "Why?". ', 'We answered "Why not?"']
+
 ``icu4py.locale``
 =================
 
