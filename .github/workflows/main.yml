@@ -126,9 +126,6 @@ jobs:
         || 'unknown'
       }}
 
-    env:
-      MACOSX_DEPLOYMENT_TARGET: '15.0'
-
     steps:
       - uses: actions/checkout@v6
 
