@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Support older macOS versions: 10.9 on Intel and 11.0 on Apple Silicon.
+
+  `PR #60 <https://github.com/adamchainz/icu4py/pull/60>`__.
+
 1.0.0 (2026-02-03)
 ------------------
 
