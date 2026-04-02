@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Upgrade to ICU version 78.3.
+
+  `PR #67 <https://github.com/adamchainz/icu4py/pull/67>`__.
+
 1.0.1 (2026-02-04)
 ------------------
 

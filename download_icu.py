@@ -14,7 +14,7 @@ from pathlib import Path
 # import subprocess
 # from functools import partial
 #
-# tag = "v78.2.post4"
+# tag = "v78.3"
 # icu_version = tag.lstrip("v").split(".post")[0]
 #
 #
@@ -42,18 +42,18 @@ from pathlib import Path
 #     cog.outl(f'    "{name}": "{sha}",')
 # cog.outl("}")
 # ]]]
-ICU_VERSION = "78.2"
-BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.2.post4"
+ICU_VERSION = "78.3"
+BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.3"
 
 CHECKSUMS = {
-    "icu-78.2-linux-aarch64.tar.gz": "e02b5b98f37f591f1ebdd33bf2d1793b5f0537e3448eb14bccab8f650d6fecd0",
-    "icu-78.2-linux-musl-aarch64.tar.gz": "c4c148542154d3c5553919496c1cfae8a12b293ec59ad5b1cd23b66765394c03",
-    "icu-78.2-linux-musl-x86_64.tar.gz": "409528c4295ed354f1dab0230d229347651c0f971a14c8bbce454a72c38a935a",
-    "icu-78.2-linux-x86_64.tar.gz": "5e249aa62ed73047640d5d78b5e650dbdc4da0b9b618df064a0c6425a63fc83a",
-    "icu-78.2-macos-aarch64.tar.gz": "bac7d114fa69cc1dca9353548395e4d57542468518d0e41b3aeb66b9c24eb4a2",
-    "icu-78.2-macos-x86_64.tar.gz": "3a755f1a58ebff19deed8863ce74d51b32c008091b2f1c3612e5913f1c1817d8",
-    "icu-78.2-windows-AMD64.tar.gz": "329cbcc0e0f811ea189f9d1d138d2c17506168e1cdae9672e68be649cdea4a9e",
-    "icu-78.2-windows-ARM64.tar.gz": "6e7e532db64b577a6d8c7f5dc908e19488fb5ad0062b052b56751590cba3ecd5",
+    "icu-78.3-linux-aarch64.tar.gz": "16dbca31860da46d03ce8b7d1dadc23462ae9e9258fffd6f2e47e5308a6a4f52",
+    "icu-78.3-linux-musl-aarch64.tar.gz": "64399d3509611584675cd21eab85ac0f858d9bdf9d3145f3628fde086cf4d178",
+    "icu-78.3-linux-musl-x86_64.tar.gz": "61273a705e888c8aaaed8cd6f1ad95454ef3ba43e359a486b0ca18fdeaac9d92",
+    "icu-78.3-linux-x86_64.tar.gz": "9d7861a5924fdfbdebbe898c7e4a6454a810c9c4c2b7c1eb787452495f36111f",
+    "icu-78.3-macos-aarch64.tar.gz": "0bbaf9306d14db4ce02c1608ab3af8cbb1c3311f079aeae56a5db22a651d16ca",
+    "icu-78.3-macos-x86_64.tar.gz": "4fbd86d56d938cc15b581beb2ebe37609fca3ad0689877d53a012895b9e5b534",
+    "icu-78.3-windows-AMD64.tar.gz": "666428609339f1778eba38ef43d1f311abb0913ef762b718cc743c5af4d0502c",
+    "icu-78.3-windows-ARM64.tar.gz": "d1d7bc676400f847502259a9955c7f63a7f78c69ec70cead6b57d3af7b090e0a",
 }
 # [[[end]]]
 
