@@ -50,7 +50,7 @@ urls.Repository = "https://github.com/adamchainz/icu4py"
 test = [
   "coverage[toml]",
   "mypy>=1.19.1",
-  "pytest",
+  "pytest>=9",
   "pytest-randomly",
 ]
 docs = [
@@ -148,11 +148,7 @@ warn_unreachable = true
 overrides = [ { module = "tests.*", allow_untyped_defs = true } ]
 
 [tool.pytest]
-ini_options.addopts = """\
-    --strict-config
-    --strict-markers
-    """
-ini_options.xfail_strict = true
+strict = true
 
 [tool.coverage]
 run.branch = true
