@@ -474,7 +474,7 @@ docs = [
 test = [
     { name = "coverage", extras = ["toml"] },
     { name = "mypy", specifier = ">=1.19.1" },
-    { name = "pytest" },
+    { name = "pytest", specifier = ">=9" },
     { name = "pytest-randomly" },
 ]
 
