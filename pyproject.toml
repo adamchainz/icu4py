@@ -151,7 +151,6 @@ overrides = [ { module = "tests.*", allow_untyped_defs = true } ]
 ini_options.addopts = """\
     --strict-config
     --strict-markers
-    -p pytester
     """
 ini_options.xfail_strict = true
 
