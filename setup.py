@@ -20,7 +20,11 @@ if sys.platform == "win32":
     include_dirs = [str(icu_root / "include")]
     library_dirs = [str(icu_root / "lib")]
 else:
-    extra_compile_args = ["-std=c++17"]
+    extra_compile_args = [
+        "-std=c++17",
+        "-fno-omit-frame-pointer",
+        "-mno-omit-leaf-frame-pointer",
+    ]
     include_dirs: list[str] = []
     library_dirs: list[str] = []
 
