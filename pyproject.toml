@@ -68,7 +68,6 @@ dependency-groups.build = { requires-python = ">=3.14" }
 sources.sphinx-build-compatibility = { git = "https://github.com/readthedocs/sphinx-build-compatibility", rev = "4f304bd4562cdc96316f4fec82b264ca379d23e0" }
 
 [tool.cibuildwheel]
-archs = [ "auto64" ]
 build = [
   "cp314-*",
   "cp314t-*",
@@ -78,6 +77,7 @@ build = [
   "cp311-*",
   "cp310-*",
 ]
+archs = [ "auto64" ]
 enable = [
   # Enable free-threaded wheels on Python 3.13 (where it was experimental)
   "cpython-freethreading",
@@ -85,14 +85,14 @@ enable = [
 # Download and install ICU from icu4c-builds
 before-all = "python download_icu.py"
 linux.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
-linux.environment.LDFLAGS = "-L/tmp/icu/icu/lib"
 linux.environment.LD_LIBRARY_PATH = "/tmp/icu/icu/lib"
+linux.environment.LDFLAGS = "-L/tmp/icu/icu/lib"
 macos.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
-macos.environment.LDFLAGS = "-L/tmp/icu/icu/lib -Wl,-headerpad_max_install_names"
 macos.environment.DYLD_LIBRARY_PATH = "/tmp/icu/icu/lib"
+macos.environment.LDFLAGS = "-L/tmp/icu/icu/lib -Wl,-headerpad_max_install_names"
+windows.before-build = "pip install delvewheel"
 windows.environment.ICU_ROOT = "C:/icu/icu"
 windows.environment.PATH = "C:/icu/icu/bin;$PATH"
-windows.before-build = "pip install delvewheel"
 windows.repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 
 [tool.ruff]
@@ -136,15 +136,15 @@ lint.isort.required-imports = [ "from __future__ import annotations" ]
 max_supported_python = "3.14"
 
 [tool.mypy]
+mypy_path = "src/"
+namespace_packages = false
+warn_unreachable = true
 enable_error_code = [
   "ignore-without-code",
   "redundant-expr",
   "truthy-bool",
 ]
-mypy_path = "src/"
-namespace_packages = false
 strict = true
-warn_unreachable = true
 overrides = [ { module = "tests.*", allow_untyped_defs = true } ]
 
 [tool.pytest]
