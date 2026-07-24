@@ -78,10 +78,6 @@ build = [
   "cp310-*",
 ]
 archs = [ "auto64" ]
-enable = [
-  # Enable free-threaded wheels on Python 3.13 (where it was experimental)
-  "cpython-freethreading",
-]
 # Download and install ICU from icu4c-builds
 before-all = "python download_icu.py"
 linux.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
