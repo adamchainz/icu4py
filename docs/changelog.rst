@@ -6,6 +6,8 @@ Changelog
 
   `PR #74 <https://github.com/adamchainz/icu4py/issues/74>`__.
 
+* Stop shipping wheels for free-threaded Python 3.13 since `cibuildwheel 4.0.0 dropped support for building them <https://iscinumpy.dev/post/cibuildwheel-4-0-0/>__.
+
 1.1.0 (2026-04-03)
 ------------------
 
