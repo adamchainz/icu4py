@@ -86,10 +86,8 @@ linux.environment.LDFLAGS = "-L/tmp/icu/icu/lib"
 macos.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
 macos.environment.DYLD_LIBRARY_PATH = "/tmp/icu/icu/lib"
 macos.environment.LDFLAGS = "-L/tmp/icu/icu/lib -Wl,-headerpad_max_install_names"
-windows.before-build = "pip install delvewheel"
 windows.environment.ICU_ROOT = "C:/icu/icu"
 windows.environment.PATH = "C:/icu/icu/bin;$PATH"
-windows.repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
 
 [tool.ruff]
 lint.select = [
