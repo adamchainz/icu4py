@@ -5,9 +5,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 from __future__ import annotations
 
-from pathlib import Path
-
 import tomllib
+from pathlib import Path
 
 # -- Path setup --------------------------------------------------------------
 

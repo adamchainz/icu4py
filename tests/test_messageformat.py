@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from decimal import Decimal
 
 import pytest
@@ -481,7 +481,7 @@ class TestMessageFormat:
         pattern = "Time: {timestamp,date,short}"
         fmt = MessageFormat(pattern, "en_GB")
 
-        dt = datetime(2024, 3, 10, 12, 0, 0, tzinfo=timezone.utc)
+        dt = datetime(2024, 3, 10, 12, 0, 0, tzinfo=UTC)
         result = fmt.format({"timestamp": dt})
         assert result == "Time: 10/03/2024"
 

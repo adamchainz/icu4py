@@ -5,7 +5,7 @@ Installation
 Requirements
 ------------
 
-Python 3.10 to 3.14 supported, including free-threaded variants from Python 3.13 onwards.
+Python 3.11 to 3.14 supported, including free-threaded variants from Python 3.13 onwards.
 
 Only CPython is supported at this time because ICU uses its C API.
 

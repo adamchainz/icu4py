@@ -97,11 +97,7 @@ int MessageFormat_init(MessageFormatObject* self, PyObject* args, PyObject* kwds
         return -1;
     }
 
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
-#else
     PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
-#endif
     if (module == nullptr) {
         return -1;
     }
@@ -487,11 +483,7 @@ PyObject* MessageFormat_get_pattern(MessageFormatObject* self, void* closure) {
 }
 
 PyObject* MessageFormat_get_locale(MessageFormatObject* self, void* closure) {
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
-#else
     PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &icu4pymodule);
-#endif
     if (module == nullptr) {
         return nullptr;
     }

@@ -80,11 +80,7 @@ int Breaker_init_impl(BreakerObject* self, PyObject* args, PyObject* kwds,
         return -1;
     }
 
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#else
     PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#endif
     if (module == nullptr) {
         return -1;
     }
@@ -233,11 +229,7 @@ PyObject* BaseBreaker_iternext(BreakerObject* self) {
 }
 
 PyObject* Breaker_segments(BreakerObject* self, PyObject* Py_UNUSED(args)) {
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#else
     PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#endif
     if (module == nullptr) {
         return nullptr;
     }
@@ -282,11 +274,7 @@ PyObject* Breaker_text_getter(BreakerObject* self, void* Py_UNUSED(closure)) {
 }
 
 PyObject* Breaker_locale_getter(BreakerObject* self, void* Py_UNUSED(closure)) {
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#else
     PyObject* module = PyType_GetModuleByDef(Py_TYPE(self), &breakersmodule);
-#endif
     if (module == nullptr) {
         return nullptr;
     }
@@ -356,11 +344,7 @@ int BaseBreaker_init(BreakerObject* self, PyObject* args, PyObject* kwds) {
     }
 
     PyTypeObject* type = Py_TYPE(self);
-#if PY_VERSION_HEX < 0x030B0000
-    PyObject* module = _PyType_GetModuleByDef(type, &breakersmodule);
-#else
     PyObject* module = PyType_GetModuleByDef(type, &breakersmodule);
-#endif
     if (module == nullptr) {
         return -1;
     }
