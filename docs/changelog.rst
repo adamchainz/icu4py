@@ -2,6 +2,8 @@
 Changelog
 =========
 
+* Drop Python 3.10 support.
+
 * Build with frame pointers enabled, preparation for `PEP 831 <https://peps.python.org/pep-0831/>`__.
 
   `PR #74 <https://github.com/adamchainz/icu4py/issues/74>`__.
