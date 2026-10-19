@@ -41,8 +41,15 @@ jobs:
       with:
         enable-cache: true
 
+    - name: Download ICU
+      run: python download_icu.py
+
     - name: Run tox targets for ${{ matrix.python-version }}
       run: uvx --with tox-uv tox run -f py$(echo ${{ matrix.python-version }} | tr -d .)
+      env:
+        CPPFLAGS: -I/tmp/icu/icu/include
+        LDFLAGS: -L/tmp/icu/icu/lib
+        LD_LIBRARY_PATH: /tmp/icu/icu/lib
 
     - name: Upload coverage data
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
