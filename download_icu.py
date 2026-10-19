@@ -14,7 +14,7 @@ from pathlib import Path
 # import subprocess
 # from functools import partial
 #
-# tag = "v78.3.post1"
+# tag = "v78.3.post3"
 # icu_version = tag.lstrip("v").split(".post")[0]
 #
 #
@@ -43,17 +43,17 @@ from pathlib import Path
 # cog.outl("}")
 # ]]]
 ICU_VERSION = "78.3"
-BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.3.post1"
+BASE_URL = "https://github.com/adamchainz/icu4c-builds/releases/download/v78.3.post3"
 
 CHECKSUMS = {
-    "icu-78.3-linux-aarch64.tar.gz": "fbcf92a56880c966e81e5f8c929e7472c258e638f857baf12343e5162f464c25",
-    "icu-78.3-linux-musl-aarch64.tar.gz": "9d78b4c298a08ab1d7bda1edaf5eeaa4eb724a663b6f6a69713640eb649d0bf7",
-    "icu-78.3-linux-musl-x86_64.tar.gz": "f5695cf63e8224aa6a6fb7663c1fc1727ef87abfeed0da48ce859cbfbc20cf00",
-    "icu-78.3-linux-x86_64.tar.gz": "306509deea12e9bc1f60a5f4bc7db8af3c7762e76eb695c78e745cba3b9ed747",
-    "icu-78.3-macos-aarch64.tar.gz": "faf81dcb3e6f5b8812b78ace0f80ed1058a4d97b9c0ea1b1bc7209c32ad51140",
-    "icu-78.3-macos-x86_64.tar.gz": "4fe9d92da1f222ebd58bd3a55442d2957df7a168691581468934b4d902960ca1",
-    "icu-78.3-windows-AMD64.tar.gz": "bcf8322fa0ef48e848c8106f7a80d7cafcbe94eef5945ef9eafd1e78b8c47a5d",
-    "icu-78.3-windows-ARM64.tar.gz": "a1a303c0276f41cd521b403cebd482eab2c98a0f150850449e944b5955a4172f",
+    "icu-78.3-linux-aarch64.tar.gz": "a50b679065b61feb43ffd84a55d2763920ae1e4b5e0672fc1da7676bdab59025",
+    "icu-78.3-linux-musl-aarch64.tar.gz": "49801af7ddae4e1d969f81c233f6b80d2557bbd5cdffd5284f0e952ed3ba6400",
+    "icu-78.3-linux-musl-x86_64.tar.gz": "650e60322439a2b57d44c752d027c0d2aaa80984d652f5569bbb343d574d5e75",
+    "icu-78.3-linux-x86_64.tar.gz": "b4fc48948ecb6a068d33e7578eff26d039632e1414cc8ef5c333bf3c2c969b91",
+    "icu-78.3-macos-aarch64.tar.gz": "45d3521f32cf1c9e4d750e8fb016eb21df19e4818f5e01812aba216c43591ac8",
+    "icu-78.3-macos-x86_64.tar.gz": "4b058b77dff82a212254aeb68fd520fdaa50aa007d05425112ef1ae4131adb68",
+    "icu-78.3-windows-AMD64.tar.gz": "e5b7501ea1831ed3e6da9d9c8f060780a676c27ffef4e293467d8285f1f82e03",
+    "icu-78.3-windows-ARM64.tar.gz": "7878dc74452860998116004947ccd46994979227273e11e7978b50e4d9421461",
 }
 # [[[end]]]
 
@@ -180,6 +180,10 @@ def download_and_extract() -> Path:
                 tar.extract(member, install_dir)
 
     tarball_path.unlink()
+
+    license_path = Path(__file__).parent / "LICENSE-ICU"
+    shutil.copyfile(icu_root / "LICENSE", license_path)
+    print(f"Copied ICU license to: {license_path}")
 
     print(f"ICU extracted to: {icu_root}")
     print(f"Include directory: {icu_root / 'include'}")

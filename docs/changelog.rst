@@ -10,6 +10,11 @@ Changelog
 
 * Stop shipping wheels for free-threaded Python 3.13 since `cibuildwheel 4.0.0 dropped support for building them <https://iscinumpy.dev/post/cibuildwheel-4-0-0/>`__.
 
+* Include ICU’s licence in wheels, as ``LICENSE-ICU``.
+
+  `PR #93 <https://github.com/adamchainz/icu4py/issues/93>`__.
+  Thanks to Jonathan Carter for the report in `Issue #90 <https://github.com/adamchainz/icu4py/issues/90>`__.
+
 1.1.0 (2026-04-03)
 ------------------
 
