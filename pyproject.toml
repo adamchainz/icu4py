@@ -19,7 +19,7 @@ keywords = [
   "unicode",
 ]
 license = "MIT"
-license-files = [ "LICENSE" ]
+license-files = [ "LICENSE*" ]
 authors = [
   { name = "Adam Johnson", email = "me@adamj.eu" },
 ]

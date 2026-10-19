@@ -4,6 +4,7 @@
 /.coverage
 /.coverage.*
 /.tox
+/LICENSE-ICU
 /build/
 /dist/
 /wheelhouse/
