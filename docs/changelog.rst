@@ -5,6 +5,7 @@ Changelog
 * Support Python 3.15.
 
   `PR #96 <https://github.com/adamchainz/icu4py/pull/96>`__.
+  `PR #97 <https://github.com/adamchainz/icu4py/pull/97>`__.
 
 * Drop Python 3.10 support.
 
