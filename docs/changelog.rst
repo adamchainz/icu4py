@@ -2,6 +2,9 @@
 Changelog
 =========
 
+1.2.0 (2026-10-20)
+------------------
+
 * Support Python 3.15.
 
   `PR #96 <https://github.com/adamchainz/icu4py/pull/96>`__.
