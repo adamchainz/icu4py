@@ -75,6 +75,8 @@ build = [
 archs = [ "auto64" ]
 # Download and install ICU from icu4c-builds
 before-all = "python download_icu.py"
+test-command = "tox run -c {project} -e py --installpkg {wheel}"
+test-requires = [ "tox>=4.2", "tox-uv" ]
 linux.environment.CPPFLAGS = "-I/tmp/icu/icu/include"
 linux.environment.LD_LIBRARY_PATH = "/tmp/icu/icu/lib"
 linux.environment.LDFLAGS = "-L/tmp/icu/icu/lib"
