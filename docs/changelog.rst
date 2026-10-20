@@ -2,6 +2,10 @@
 Changelog
 =========
 
+* Support Python 3.15.
+
+  `PR #96 <https://github.com/adamchainz/icu4py/pull/96>`__.
+
 * Drop Python 3.10 support.
 
 * Build with frame pointers enabled, preparation for `PEP 831 <https://peps.python.org/pep-0831/>`__.
